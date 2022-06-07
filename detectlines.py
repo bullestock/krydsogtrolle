@@ -2,29 +2,14 @@ import cv2
 import numpy
 import math
 from matplotlib import pyplot as plt
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 
-def line_intersection(line1, line2):
-    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+def to_tuple(ls):
+    return tuple([ls.coords[0], ls.coords[1]])
 
-    def det(a, b):
-        return a[0] * b[1] - a[1] * b[0]
-
-    div = det(xdiff, ydiff)
-    if div == 0:
-       return None
-
-    d = (det(*line1), det(*line2))
-    x = det(d, xdiff) / div
-    y = det(d, ydiff) / div
-    return x, y
-
-def line_distance(p1, p2):
-    dx = p1[0] - p2[0]
-    dy = p1[1] - p2[1]
-    return math.sqrt(dx*dx + dy*dy)
-
+def to_list(t):
+    return (int(t[0]), int(t[1]))
+    
 if False:
     # capture from camera
     cam = cv2.VideoCapture(2)
@@ -74,18 +59,21 @@ for line in lines:
         dx = abs(x1 - x2)
         dy = abs(y1 - y2)
         print("line: %d, %d, %d, %d" % (x1, y1, x2, y2))
+        p1 = Point(x1, y1)
+        p2 = Point(x2, y2)
+        ls = LineString([p1, p2])
         if dx >= MIN_LEN and dy < MAX_DEV:
             # horizontal
             print("H")
-            horizontal.append(((x1, y1), (x2, y2)))
+            horizontal.append(ls)
         elif dy >= MIN_LEN and dx < MAX_DEV:
             # vertical
             print("V")
-            vertical.append(((x1, y1), (x2, y2)))
+            vertical.append(ls)
         else:
             # neither
             print("skip")
-            neither.append(((x1, y1), (x2, y2)))
+            neither.append(ls)
 
 horizontal_c = set()
 vertical_c = set()
@@ -96,48 +84,42 @@ MIN_EXTEND = 40
 
 for h in horizontal:
     for v in vertical:
-        c = line_intersection(h, v)
+        c = h.intersection(v)
         is_crossing = False
         if c:
-            print("hline: %d, %d -> %d, %d" % (h[0][0], h[0][1], h[1][0], h[1][1]))
-            print("vline: %d, %d -> %d, %d" % (v[0][0], v[0][1], v[1][0], v[1][1]))
-            print("cross: %d, %d" % (c[0], c[1]))
-            dist1 = line_distance(h[0], c)
-            dist2 = line_distance(h[1], c)
-            dist3 = line_distance(v[0], c)
-            dist4 = line_distance(v[1], c)
+            print("hline: %s -> %s" % (h.coords[0], h.coords[1]))
+            print("vline: %s -> %s" % (v.coords[0], v.coords[1]))
+            print("cross: %s" % c)
+            dist1 = Point(h.coords[0]).distance(c)
+            dist2 = Point(h.coords[1]).distance(c)
+            dist3 = Point(v.coords[0]).distance(c)
+            dist4 = Point(v.coords[1]).distance(c)
             if (dist1 >= MIN_EXTEND and dist2 >= MIN_EXTEND and
                 dist3 >= MIN_EXTEND and dist4 >= MIN_EXTEND):
                 is_crossing = True
             else:
                 print("no: %d %d %d %d" % (dist1, dist2, dist3, dist4))
         if is_crossing:
-            horizontal_c.add(h)
-            vertical_c.add(v)
+            horizontal_c.add(to_tuple(h))
+            vertical_c.add(to_tuple(v))
         else:
-            other.add(h)
-            other.add(v)
+            other.add(to_tuple(h))
+            other.add(to_tuple(v))
+
+# for v in other:
+#     cv2.line(line_image, to_list(v[0]), to_list(v[1]), (255, 0, 0), 5)
+
+# for v in neither:
+#     cv2.line(line_image, (int(v.coords[0][0]), int(v.coords[0][1])),
+#              (int(v.coords[1][0]), int(v.coords[1][1])), (0, 255, 255), 5)
 
 for h in horizontal_c:
-    cv2.line(line_image, h[0], h[1], (0, 0, 255), 5)
+    cv2.line(line_image, to_list(h[0]), to_list(h[1]), (0, 0, 255), 5)
 
 for v in vertical_c:
-    cv2.line(line_image, v[0], v[1], (0, 255, 0), 5)
+    cv2.line(line_image, to_list(v[0]), to_list(v[1]), (0, 255, 0), 5)
 
-#for v in other:
-#    cv2.line(line_image, v[0], v[1], (255, 0, 0), 5)
-
-#for h in neither:
-#    cv2.line(line_image, h[0], h[1], (0, 255, 255), 5)
-
+    
 # Draw the lines on the  image
 lines_edges = cv2.addWeighted(input, 0.8, line_image, 1, 0)
 cv2.imwrite('out.png', lines_edges)
-
-
-
-# TODO
-
-# Calculate the intersections of each horizontal line with each vertical line
-
-# TODO
