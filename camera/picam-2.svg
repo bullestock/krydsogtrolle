@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1220mm"
+   height="610mm"
+   viewBox="0 0 1220 610"
+   version="1.1"
+   id="svg13457"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   sodipodi:docname="picam-2.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview13459"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.7433549"
+     inkscape:cx="577.90872"
+     inkscape:cy="99.233954"
+     inkscape:window-width="2560"
+     inkscape:window-height="1389"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs13454" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g8512">
+      <path
+         id="rect2887"
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.763938"
+         d="M 5.0002116,0 C 2.2302144,0 0,2.2302144 0,5.0002116 V 15.000118 H 200.0002 V 5.0002116 C 200.0002,2.2302144 197.76998,0 194.99998,0 Z" />
+      <rect
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.76249"
+         id="rect2904"
+         width="15"
+         height="9"
+         x="180"
+         y="4" />
+    </g>
+    <g
+       id="g8518"
+       transform="translate(0,16.404167)">
+      <path
+         id="path8514"
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.763938"
+         d="M 5.0002116,0 C 2.2302144,0 0,2.2302144 0,5.0002116 V 15.000118 H 200.0002 V 5.0002116 C 200.0002,2.2302144 197.76998,0 194.99998,0 Z" />
+      <rect
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.76249"
+         id="rect8516"
+         width="15"
+         height="9"
+         x="180"
+         y="4" />
+    </g>
+  </g>
+</svg>
