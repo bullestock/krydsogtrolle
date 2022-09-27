@@ -14,8 +14,8 @@ class Grbl:
                  home = True):
         self.origin_x = 0
         self.origin_y = 0
-        self.pen_up_position = 965
-        self.pen_down_position = 700
+        self.pen_up_position = 700
+        self.pen_down_position = 965
         self.max_speed = 15000
         self.draw_speed = 3000
         self.grid_size = grid_size
@@ -40,6 +40,10 @@ class Grbl:
     def set_origin(self, x, y):
         self.origin_x = x
         self.origin_y = y
+        
+    def set_origin_t(self, xy):
+        self.origin_x = xy[0]
+        self.origin_y = xy[1]
         
     def set_symbol(self, sym):
         self.symbol = sym
@@ -68,7 +72,7 @@ class Grbl:
     def pen_up(self, up):
         print("Pen %s" % ('up' if up else 'down'))
         pos = self.pen_up_position if up else self.pen_down_position
-        self.ser.write(b"M3S%d\n" % pos)
+        self.ser.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
         time.sleep(0.2)
 
@@ -83,23 +87,23 @@ class Grbl:
         self.goto(x2, y2, speed=draw_speed)
 
     def draw_grid(self, speed=10000):
-        l.draw_line(self.origin_x + 1*self.grid_size, self.origin_y,
-                    self.origin_x + 1*self.grid_size, self.origin_y + 3*self.grid_size,
-                    speed=speed)
-        l.pen_up(True)
-        l.draw_line(self.origin_x + 2*self.grid_size, self.origin_y + 3*self.grid_size,
-                    self.origin_x + 2*self.grid_size, self.origin_y,
-                    speed=speed)
-        l.pen_up(True)
-        l.draw_line(self.origin_x + 3*self.grid_size, self.origin_y + 1*self.grid_size,
-                    self.origin_x, self.origin_y + 1*self.grid_size,
-                    speed=speed)
-        l.pen_up(True)
-        l.draw_line(self.origin_x, self.origin_y + 2*self.grid_size,
-                    self.origin_x + 3*self.grid_size, self.origin_y + 2*self.grid_size,
-                    speed=speed)
-        l.pen_up(True)
-        l.goto(self.origin_x + 3*self.grid_size, self.origin_y + 3*self.grid_size, speed=self.max_speed)
+        self.draw_line(self.origin_x + 1*self.grid_size, self.origin_y,
+                       self.origin_x + 1*self.grid_size, self.origin_y + 3*self.grid_size,
+                       speed=speed)
+        self.pen_up(True)
+        self.draw_line(self.origin_x + 2*self.grid_size, self.origin_y + 3*self.grid_size,
+                       self.origin_x + 2*self.grid_size, self.origin_y,
+                       speed=speed)
+        self.pen_up(True)
+        self.draw_line(self.origin_x + 3*self.grid_size, self.origin_y + 1*self.grid_size,
+                       self.origin_x, self.origin_y + 1*self.grid_size,
+                       speed=speed)
+        self.pen_up(True)
+        self.draw_line(self.origin_x, self.origin_y + 2*self.grid_size,
+                       self.origin_x + 3*self.grid_size, self.origin_y + 2*self.grid_size,
+                       speed=speed)
+        self.pen_up(True)
+        self.goto(self.origin_x + 3*self.grid_size, self.origin_y + 3*self.grid_size, speed=self.max_speed)
 
     def draw_circle(self, x, y, radius, speed=None):
         # G0 X8.0000Y10.0000
