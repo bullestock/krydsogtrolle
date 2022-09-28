@@ -14,7 +14,7 @@ class Grbl:
                  home = True):
         self.origin_x = 0
         self.origin_y = 0
-        self.pen_up_position = 700
+        self.pen_up_position = 650
         self.pen_down_position = 965
         self.max_speed = 15000
         self.draw_speed = 3000
@@ -52,12 +52,12 @@ class Grbl:
         while True:
             reply = self.ser.readline().strip()
             if reply == b'ok':
-                print("OK")
+                #print("OK")
                 break
             time.sleep(0.5)
 
     def goto(self, x, y, speed=10000):
-        print("Go to %d, %d" % (x, y))
+        #print("Go to %d, %d" % (x, y))
         self.ser.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
         self.wait_for_ok()
         while True:
@@ -70,7 +70,7 @@ class Grbl:
             time.sleep(0.1)
 
     def pen_up(self, up):
-        print("Pen %s" % ('up' if up else 'down'))
+        #print("Pen %s" % ('up' if up else 'down'))
         pos = self.pen_up_position if up else self.pen_down_position
         self.ser.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
