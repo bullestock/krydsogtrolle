@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="2.677538"
-     inkscape:cx="381.69393"
-     inkscape:cy="141.54795"
+     inkscape:zoom="10.513497"
+     inkscape:cx="767.48967"
+     inkscape:cy="241.68934"
      inkscape:window-width="2560"
      inkscape:window-height="1389"
      inkscape:window-x="0"
@@ -42,7 +42,8 @@
     <path
        id="rect2099"
        style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.177268"
-       d="M 99.000158,0 C 97.892159,0 96.999764,0.891879 96.999764,1.999878 V 27.50013 H 26.999902 v -1.500166 c 0,-1.107999 -0.891879,-1.999878 -1.999878,-1.999878 H 1.999878 C 0.891879,24.000086 0,24.891965 0,25.999964 v 23.000143 c 0,1.108 0.891879,1.99988 1.999878,1.99988 h 23.000146 c 1.107999,0 1.999878,-0.89188 1.999878,-1.99988 v -1.50016 h 69.999862 v 25.50025 c 0,1.108 0.892395,1.99988 2.000394,1.99988 H 199.99968 c 1.108,0 2.00039,-0.89188 2.00039,-1.99988 V 1.999878 C 202.00007,0.891879 201.10768,0 199.99968,0 Z" />
+       d="M 99.000159,0 C 97.892161,0 96.999764,0.89188004 96.999764,1.9998779 V 27.50013 H 50.000049 v -1.500167 c 0,-1.107998 -0.89188,-1.999878 -1.999878,-1.999878 H 25.000024 c -1.107997,0 -1.999878,0.89188 -1.999878,1.999878 V 49.00011 c 0,1.107999 0.891881,1.999878 1.999878,1.999878 h 23.000147 c 1.107998,0 1.999878,-0.891879 1.999878,-1.999878 v -1.500167 h 46.999715 v 25.500252 c 0,1.107999 0.892397,1.999878 2.000395,1.999878 H 199.99968 c 1.108,0 2.00039,-0.891879 2.00039,-1.999878 V 61.635856 c -0.0502,-2.472594 1.69689,-4.136007 3.94675,-4.136007 h 12.537 c 3.60982,0 6.5164,-2.906059 6.5164,-6.515881 V 24.016105 c 0,-3.609822 -2.90658,-6.515881 -6.5164,-6.515881 0,0 -8.45885,-0.07426 -12.42181,0 -3.96296,0.07426 -4.06194,-4.013411 -4.06194,-4.013411 V 1.9998779 C 202.00007,0.89188004 201.10768,0 199.99968,0 Z"
+       sodipodi:nodetypes="ssccssssssssccssssccsssszcsss" />
     <circle
        style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.490205"
        id="path2230"
@@ -67,41 +68,45 @@
        cx="103.4999"
        cy="69.000023"
        r="1.5" />
-    <circle
-       style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
-       id="circle2272"
-       cx="3.1290691"
-       cy="27.000038"
-       r="1" />
-    <circle
-       style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
-       id="circle2293"
-       cx="15.629069"
-       cy="27.000038"
-       r="1" />
-    <circle
-       style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
-       id="circle2295"
-       cx="3.1290691"
-       cy="48.000038"
-       r="1" />
-    <circle
-       style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
-       id="circle2297"
-       cx="15.629069"
-       cy="48.000038"
-       r="1" />
-    <rect
-       style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:1.04693"
-       id="rect6262"
-       width="9"
-       height="9"
-       x="11.129069"
-       y="33.000038" />
+    <g
+       id="g957"
+       transform="rotate(90,25.13745,48.862589)">
+      <circle
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
+         id="circle2272"
+         cx="3.1290691"
+         cy="27.000038"
+         r="1" />
+      <circle
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
+         id="circle2293"
+         cx="15.629069"
+         cy="27.000038"
+         r="1" />
+      <circle
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
+         id="circle2295"
+         cx="3.1290691"
+         cy="48.000038"
+         r="1" />
+      <circle
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.326803"
+         id="circle2297"
+         cx="15.629069"
+         cy="48.000038"
+         r="1" />
+      <rect
+         style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:1.04693"
+         id="rect6262"
+         width="9"
+         height="9"
+         x="11.129069"
+         y="33.000038" />
+    </g>
     <circle
        style="fill:none;fill-opacity:0.263587;stroke:#000000;stroke-width:0.249553"
        id="path9531"
-       cx="192"
+       cx="215"
        cy="37.500038"
        r="2.5" />
   </g>
