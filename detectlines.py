@@ -78,6 +78,7 @@ def detect_grid(input, min_length):
     # minimum extension beyond crossing point
     MIN_EXTEND = 40
 
+    # Find line that cross and are sufficiently long
     for h in horizontal:
         for v in vertical:
             c = h.intersection(v)
@@ -104,58 +105,56 @@ def detect_grid(input, min_length):
                 other.add(to_tuple(h))
                 other.add(to_tuple(v))
 
-    # for v in other:
-    #     cv2.line(line_image, to_list(v[0]), to_list(v[1]), (255, 0, 0), 5)
-
-    # for v in neither:
-    #     cv2.line(line_image, (int(v.coords[0][0]), int(v.coords[0][1])),
-    #              (int(v.coords[1][0]), int(v.coords[1][1])), (0, 255, 255), 5)
-
-    print(horizontal_c)
+    # Draw H and V lines
     for h in horizontal_c:
-        cv2.line(line_image, to_list(h[0]), to_list(h[1]), (0, 0, 255), 5)
+        cv2.line(line_image, to_list(h[0]), to_list(h[1]), (0, 255, 255), 3)
 
     for v in vertical_c:
-        cv2.line(line_image, to_list(v[0]), to_list(v[1]), (0, 255, 0), 5)
+        cv2.line(line_image, to_list(v[0]), to_list(v[1]), (0, 255, 0), 3)
 
-    
-    # Draw the lines on the  image
-    lines_edges = cv2.addWeighted(input, 0.8, line_image, 1, 0)
-    return (horizontal_c, vertical_c, lines_edges)
-
-if __name__ == "__main__":
-    input = cv2.imread('slice.png')
-    h, v, output = detect_grid(input, 150)
-    cv2.imwrite('out.png', output)
-    print("H: %s" % h)
-    print("V: %s" % v)
+    # Find boundaries of grid
+    print("H: %s" % horizontal_c)
+    print("V: %s" % vertical_c)
     count = 0
     x1avg = 0
     x2avg = 0
-    for ls in h:
+    for ls in horizontal_c:
         x1 = ls[0][0]
         x2 = ls[1][0]
         if x1 > x2:
             x1, x2 = x2, x1
+        print("H X %d %d" % (x1, x2))
         x1avg = x1avg + x1
         x2avg = x2avg + x2
         count = count + 1
+    x1avg = int(x1avg/count)
+    x2avg = int(x2avg/count)
     count = 0
     y1avg = 0
     y2avg = 0
-    for ls in v:
+    for ls in vertical_c:
         y1 = ls[0][1]
         y2 = ls[1][1]
         if y1 > y2:
             y1, y2 = y2, y1
         y1avg = y1avg + y1
         y2avg = y2avg + y2
-        print("%d %d" % (y1, y2))
+        #print("%d %d" % (y1, y2))
         count = count + 1
-    x1avg = int(x1avg/count)
-    x2avg = int(x2avg/count)
     y1avg = int(y1avg/count)
     y2avg = int(y2avg/count)
     print("X %d - %d" % (x1avg, x2avg))
     print("Y %d - %d" % (y1avg, y2avg))
+
+    cv2.rectangle(line_image, (x1avg, y1avg), (x2avg, y2avg), (0, 0, 255), 1)
+
+    # Add lines to the original image
+    lines_edges = cv2.addWeighted(input, 0.8, line_image, 1, 0)
+
+    return (horizontal_c, vertical_c, (x1avg, x2avg), (y1avg, y2avg), lines_edges)
+
+if __name__ == "__main__":
+    input = cv2.imread('slice.png')
+    h, v, xx, yy, output = detect_grid(input, 150)
+    cv2.imwrite('out.png', output)
     
