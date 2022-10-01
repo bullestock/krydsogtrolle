@@ -11,6 +11,7 @@ while True:
     if not ret:
         print("failed to grab frame")
         break
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     preview = cv2.resize(frame, (1296, 972))
     cv2.imshow("test", preview)
 
