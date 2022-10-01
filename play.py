@@ -46,6 +46,7 @@ def detect_grid_position(paper, pen, active_square_origin):
     if not ret:
         print("Failed to grab frame from camera")
         quit()
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     cv2.imwrite("frame.png", frame)
     area_pen = (active_square_origin, (active_square_origin[0] + square_size,
                                        active_square_origin[1] + square_size))
