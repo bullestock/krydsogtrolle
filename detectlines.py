@@ -157,4 +157,41 @@ if __name__ == "__main__":
     input = cv2.imread('slice.png')
     h, v, xx, yy, output = detect_grid(input, 150)
     cv2.imwrite('out.png', output)
+
+    gray = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
+
+    dx = (xx[1] - xx[0])/3
+    dy = (yy[1] - yy[0])/3
+    MARGIN=7
+    for i in range(0, 3):
+        for j in range(0, 3):
+            y1 = int(yy[0]+j*dy)
+            y2 = int(yy[0]+(j+1)*dy)
+            x1 = int(xx[0]+i*dx)
+            x2 = int(xx[0]+(i+1)*dx) 
+            cell = input[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
+            graycell = gray[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
+            cv2.imwrite("cell%d%draw.png" % (i, j), cell)
+            ret,thresh = cv2.threshold(graycell, 127, 255, cv2.THRESH_BINARY)
+            cv2.imwrite("cell%d%dthres.png" % (i, j), thresh)
+            if True:
+                thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
+                contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                n = 0
+                largest_idx = 0
+                idx = 0
+                for c in contours:
+                    if len(c) > n:
+                        n = len(c)
+                        largest_idx = idx
+                    idx = idx + 1
+                cnt = contours[largest_idx]
+                cell = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+                cv2.drawContours(cell, [cnt], -1, (255,0,0), 3)
+                cv2.imwrite("cell%d%d.png" % (i, j), cell)
+                area = cv2.contourArea(cnt)
+                hull = cv2.convexHull(cnt)
+                hull_area = cv2.contourArea(hull)
+                solidity = float(area)/hull_area
+                print("cell%d%d: %f" % (i, j, solidity))
     
