@@ -2,7 +2,7 @@ import cadquery as cq
 import math
 
 # shell thickness
-th = 1.5
+th = 2
 # shell fillet radius
 fillet_r = 1.5
 
@@ -11,8 +11,8 @@ centerXY = (True, True, False)
 wart_depth = 15
 wart_width = 20
 height = 45
-width = 40
-depth = 15
+width = 50
+depth = 18
 
 # make shell
 result = (cq.Workplane("XZ")
@@ -37,18 +37,19 @@ result.faces("<Z").workplane(centerOption="CenterOfMass",
 result.faces("<Y").workplane(centerOption="CenterOfMass", 
                              invert=True).tag("bot")
 
+# Screw stud
 result = (result
           .workplaneFromTagged("bot")
-          .circle(3)
+          .circle(4)
           .extrude(depth)
           .workplaneFromTagged("bot")
-          .circle(0.7)
+          .circle(1.2)
           .cutBlind(depth/2)
           .workplaneFromTagged("bot")
-          .circle(3.7/2)
+          .circle(6/2)
           .cutBlind(th)
           .workplaneFromTagged("bot")
-          .circle(2/2)
+          .circle(3/2)
           .cutBlind(2*th)
           
           )
@@ -77,6 +78,19 @@ result = (result
           .cutBlind(-width/2)
           )
 
+# switch hole
+result = (result
+          .workplaneFromTagged("end")
+          .transformed(offset=(width*0.3, 0, (width-wart_width)/2), rotate=(0, -90, 0))
+          .rect(6.5, 3.5)
+          .cutBlind(-width/2)
+          .workplaneFromTagged("end")
+          .transformed(offset=(width*0.3, 0, (width-wart_width)/2), rotate=(0, -90, 0))
+          .rarray(15, 1, 2, 1)
+          .circle(1)
+          .cutBlind(-width/4)
+          )
+
 cut_h = depth - 2*th
 p1 = result.faces(">Y").workplane(-cut_h).split(keepTop=True)
 
@@ -84,3 +98,4 @@ p2 = result.faces(">Y").workplane(-cut_h).split(keepBottom=True)
 
 #show_object(p1)
 show_object(p2)
+#show_object(result)
