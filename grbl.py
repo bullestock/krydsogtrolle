@@ -7,7 +7,8 @@ class Symbol(Enum):
     NOUGHT = 2
 
 class Grbl:
-    
+    MAX_X = 340
+    MAX_Y = 210
     def __init__(self,
                  serial_port = "/dev/ttyUSB0",
                  grid_size = 20,
