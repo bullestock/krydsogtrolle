@@ -1,6 +1,7 @@
 import cv2
 import numpy
 import math
+import statistics
 from shapely.geometry import LineString, Point
 
 DEBUG = True
@@ -134,39 +135,37 @@ def detect_grid(input, min_length):
     if SILLYDEBUG:
         print("H: %s" % horizontal_c)
         print("V: %s" % vertical_c)
-    count = 0
-    x1avg = 0
-    x2avg = 0
+    # Sort into low and high values
+    x1s = []
+    x2s = []
     for ls in horizontal_c:
-        x1 = ls[0][0]
-        x2 = ls[1][0]
+        x1 = int(ls[0][0])
+        x2 = int(ls[1][0])
         if x1 > x2:
             x1, x2 = x2, x1
         if SILLYDEBUG:
             print("H X %d %d" % (x1, x2))
-        x1avg = x1avg + x1
-        x2avg = x2avg + x2
-        count = count + 1
-    x1avg = int(x1avg/count)
-    x2avg = int(x2avg/count)
-    count = 0
-    y1avg = 0
-    y2avg = 0
+        x1s.append(x1)
+        x2s.append(x2)
+    # Use the mode
+    x1mode = statistics.mode(x1s)
+    x2mode = statistics.mode(x2s)
+    y1s = []
+    y2s = []
     for ls in vertical_c:
-        y1 = ls[0][1]
-        y2 = ls[1][1]
+        y1 = int(ls[0][1])
+        y2 = int(ls[1][1])
         if y1 > y2:
             y1, y2 = y2, y1
-        y1avg = y1avg + y1
-        y2avg = y2avg + y2
-        #print("%d %d" % (y1, y2))
-        count = count + 1
-    y1avg = int(y1avg/count)
-    y2avg = int(y2avg/count)
-    print("X %d - %d" % (x1avg, x2avg))
-    print("Y %d - %d" % (y1avg, y2avg))
-
-    cv2.rectangle(line_image, (x1avg, y1avg), (x2avg, y2avg), (0, 0, 255), 1)
+        y1s.append(y1)
+        y2s.append(y2)
+    y1mode = statistics.mode(y1s)
+    y2mode = statistics.mode(y2s)
+    xy1 = (x1mode, y1mode)
+    xy2 = (x2mode, y2mode)
+    print("X %d - %d" % xy1)
+    print("Y %d - %d" % xy2)
+    cv2.rectangle(line_image, xy1, xy2, (0, 0, 255), 1)
 
     # Add lines to the original image
     lines_edges = cv2.addWeighted(input, 0.8, line_image, 1, 0)
@@ -185,7 +184,7 @@ def detect_grid(input, min_length):
     for v in vertical_c:
         cv2.line(nolines, to_list(v[0]), to_list(v[1]), background, 5)
 
-    return (horizontal_c, vertical_c, (x1avg, x2avg), (y1avg, y2avg), lines_edges, nolines)
+    return (horizontal_c, vertical_c, xy1, xy2, lines_edges, nolines)
 
 def detect_shape_contours(i, j, cell, graycell):
     cv2.imwrite("cell%d%draw.png" % (i, j), cell)
