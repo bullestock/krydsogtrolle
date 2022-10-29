@@ -161,11 +161,11 @@ def detect_grid(input, min_length):
         y2s.append(y2)
     y1mode = statistics.mode(y1s)
     y2mode = statistics.mode(y2s)
-    xy1 = (x1mode, y1mode)
-    xy2 = (x2mode, y2mode)
-    print("X %d - %d" % xy1)
-    print("Y %d - %d" % xy2)
-    cv2.rectangle(line_image, xy1, xy2, (0, 0, 255), 1)
+    xx = (x1mode, x2mode)
+    yy = (y1mode, y2mode)
+    print("X %d - %d" % xx)
+    print("Y %d - %d" % yy)
+    cv2.rectangle(line_image, (xx[0], yy[0]), (xx[1], yy[1]), (0, 0, 255), 1)
 
     # Add lines to the original image
     lines_edges = cv2.addWeighted(input, 0.8, line_image, 1, 0)
@@ -184,12 +184,15 @@ def detect_grid(input, min_length):
     for v in vertical_c:
         cv2.line(nolines, to_list(v[0]), to_list(v[1]), background, 5)
 
-    return (horizontal_c, vertical_c, xy1, xy2, lines_edges, nolines)
+    return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
-def detect_shape_contours(i, j, cell, graycell):
-    cv2.imwrite("cell%d%draw.png" % (i, j), cell)
-    ret, thresh = cv2.threshold(graycell, 127, 255, cv2.THRESH_BINARY)
-    cv2.imwrite("cell%d%dthres.png" % (i, j), thresh)
+def detect_shape_contours(x, y, cell):
+    cv2.imwrite("cell%d%draw.png" % (x, y), cell)
+    ret, thresh = cv2.threshold(cell, 127, 255, cv2.THRESH_BINARY)
+    cv2.imwrite("cell%d%dthres.png" % (x, y), thresh)
+    # Calculate nonzero pixels to eliminate noise
+    height, width = thresh.shape[:2]
+    nonzero = height*width - cv2.countNonZero(thresh)
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -204,12 +207,39 @@ def detect_shape_contours(i, j, cell, graycell):
     cnt = contours[largest_idx]
     cell = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
     cv2.drawContours(cell, [cnt], -1, (255,0,0), 3)
-    cv2.imwrite("cell%d%d.png" % (i, j), cell)
+    cv2.imwrite("cell%d%d.png" % (x, y), cell)
     area = cv2.contourArea(cnt)
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
     solidity = float(area)/hull_area
-    print("cell%d%d: %f" % (i, j, solidity))
+    symbol = ' '
+    if nonzero > 100 and solidity < 0.99:
+        symbol = 'X' if solidity < 0.75 else 'O'
+    print("cell%d%d: %d %f -> %c" % (x, y, nonzero, solidity, symbol))
+    return symbol
+
+def detect_symbols(pic, xx, yy):
+    """
+    Return 9-character string with X, O or space
+    """
+    print("detect_symbols: %s, %s" % (xx, yy))
+    grid_pic = pic[yy[0]:yy[1], xx[0]:xx[1]]
+    cv2.imwrite("grid_pic.png", grid_pic)
+
+    dx = (xx[1] - xx[0])/3
+    dy = (yy[1] - yy[0])/3
+    MARGIN=7
+    symbols = ''
+    for y in range(0, 3):
+        for x in range(0, 3):
+            y1 = int(y*dy)
+            y2 = int((y+1)*dy)
+            x1 = int(x*dx)
+            x2 = int((x+1)*dx) 
+            cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
+            sym = detect_shape_contours(x, y, cell)
+            symbols = symbols + sym
+    return symbols
                 
 if __name__ == "__main__":
     input = cv2.imread('slice.png')

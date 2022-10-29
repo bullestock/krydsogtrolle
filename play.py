@@ -15,6 +15,8 @@ SQUARE_SIZE = 5*GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
 
+BLANK_BOARD = '         '
+
 active_square_x = 0
 active_square_y = 0
 
@@ -139,8 +141,10 @@ def detect_grid_position(paper, pen, active_square):
     cv2.imwrite("frame-square.png", frame)
     # Detect grid
     h, v, xx, yy, output, nolines = detect.detect_grid(frame, 4*GRID_SIZE)
+    print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
     cv2.imwrite('out.png', output)
     cv2.imwrite('nolines.png', nolines)
+    return (frame, xx, yy)
     
     # area_pen = (active_square_origin, (active_square_origin[0] + SQUARE_SIZE,
     #                                    active_square_origin[1] + SQUARE_SIZE))
@@ -152,6 +156,22 @@ def detect_grid_position(paper, pen, active_square):
     # slice = frame[area_cam[1][0]:area_cam[1][1], area_cam[0][0]:area_cam[0][1]]
     # slice = frame[1000:1400, 1300:1600]
     # cv2.imwrite("slice.png", slice)
+
+def index_to_x(index):
+    return index % 3
+
+def index_to_y(index):
+    return int(index / 3)
+
+def fatal_error(msg):
+    print('FATAL: %s' % msg)
+    quit()
+
+def print_board(s, pad):
+    pre = pad * ' '
+    return "%s\n%s%s\n%s%s" % (s[0:3], pre, s[3:6], pre, s[6:9])
+
+# --- main ---
 
 parser = argparse.ArgumentParser(description='Play noughts and crosses.')
 parser.add_argument('-n', '--noplotter',
@@ -171,6 +191,7 @@ active_square_origin = (pen[0][0] + active_square[0] * SQUARE_SIZE,
 print("Active square: %s" % str(active_square_origin))
 
 # start main game loop
+prev_symbols = BLANK_BOARD
 
 if plotter:
     # Set the origin
@@ -180,5 +201,27 @@ if plotter:
     # Make room for the human
     present(plotter, active_square_origin)
 
-# Detect position of the grid
-grid_pos = detect_grid_position(paper, pen, active_square)
+new_symbol = None
+while not new_symbol:
+    wait_for_human_move()
+
+    # Detect position of the grid
+    pic, xx, yy = detect_grid_position(paper, pen, active_square)
+    pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
+    print("detect_grid_position: %s, %s" % (xx, yy))
+    cur_symbols = detect.detect_symbols(pic, xx, yy)
+    prefix = 'Board: '
+    print("%s%s" % (prefix, print_board(cur_symbols, len(prefix))))
+
+    if len(cur_symbols) != len(prev_symbols):
+        fatal_error('board size changed')
+
+    for i in range(0, len(cur_symbols)):
+        if cur_symbols[i] != prev_symbols[i]:
+            if new_symbol:
+                fatal_error('more than one new symbol')
+            new_symbol = (i, cur_symbols[i])
+
+print('New symbol: %c at %d, %d' % (new_symbol[1],
+                                    index_to_x(new_symbol[0]),
+                                    index_to_y(new_symbol[0])))
