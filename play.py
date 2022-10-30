@@ -4,11 +4,15 @@ import grbl
 import numpy
 import subprocess
 import detect
+import display
 from shapely.geometry import LineString, Point
 
 port = 0
 cam = cv2.VideoCapture(port)
 cam.set(cv2.CAP_PROP_BUFFERSIZE, 1) # don't store old frames
+
+display = display.Display()
+display.show(0, 'Starting')
 
 GRID_SIZE = 15
 SQUARE_SIZE = 5*GRID_SIZE
@@ -171,6 +175,10 @@ def print_board(s, pad):
     pre = pad * ' '
     return "%s\n%s%s\n%s%s" % (s[0:3], pre, s[3:6], pre, s[6:9])
 
+def wait_for_human_move():
+    input('Please make your move')
+    print('OK!')
+
 # --- main ---
 
 parser = argparse.ArgumentParser(description='Play noughts and crosses.')
@@ -183,6 +191,7 @@ if not args.noplotter:
     plotter = grbl.Grbl(grid_size = GRID_SIZE)
     plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 
+display.show(0, 'Detecting paper')
 paper = detect_paper_boundaries()
 pen = compute_pen_boundaries()
 active_square = get_next_square()
@@ -197,15 +206,18 @@ if plotter:
     # Set the origin
     plotter.set_origin_t(active_square_origin)
     # Set the scene
+    display.show(0, 'Drawing grid')
     plotter.draw_grid()
     # Make room for the human
     present(plotter, active_square_origin)
 
 new_symbol = None
 while not new_symbol:
+    display.show(0, 'Waiting for move')
     wait_for_human_move()
 
     # Detect position of the grid
+    display.show(0, 'Detecting symbols')
     pic, xx, yy = detect_grid_position(paper, pen, active_square)
     pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
     print("detect_grid_position: %s, %s" % (xx, yy))
@@ -222,6 +234,7 @@ while not new_symbol:
                 fatal_error('more than one new symbol')
             new_symbol = (i, cur_symbols[i])
 
-print('New symbol: %c at %d, %d' % (new_symbol[1],
-                                    index_to_x(new_symbol[0]),
-                                    index_to_y(new_symbol[0])))
+    new_symbol_x = index_to_x(new_symbol[0])
+    new_symbol_y = index_to_y(new_symbol[0])
+    print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+    display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
