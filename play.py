@@ -6,6 +6,7 @@ import subprocess
 import detect
 import display
 from alphabeta import Tic, get_enemy, determine
+from pynput import keyboard
 from shapely.geometry import LineString, Point
 
 port = 0
@@ -184,6 +185,24 @@ def print_board(s, pad):
 def wait_for_human_move():
     input('Please make your move')
     print('OK!')
+
+def wait_key():
+    ''' Wait for a key press on the console and return it. '''
+    result = None
+    def on_press(key):
+        nonlocal result
+        result = key
+
+    def on_release(key):
+        # Stop listener
+        return False
+
+    # Collect events until released
+    with keyboard.Listener(
+            on_press=on_press,
+            on_release=on_release) as listener:
+        listener.join()    
+    return result
 
 # --- main ---
 
