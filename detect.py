@@ -37,10 +37,8 @@ def detect_grid(input, min_length):
     blur = cv2.medianBlur(gray, 5)
     if DEBUG:
         cv2.imwrite('blur.png', blur)
-    adapt_type = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
-    thresh_type = cv2.THRESH_BINARY_INV
-    #bin_img = cv2.adaptiveThreshold(gray, 255, adapt_type, thresh_type, 11, 2)
-    ret, bin_img = cv2.threshold(gray, 128, 255, thresh_type + cv2.THRESH_OTSU)
+    thresh_type = cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+    ret, bin_img = cv2.threshold(gray, 128, 255, thresh_type)
     print("Threshold: %d" % ret)
     if DEBUG:
         cv2.imwrite('bin.png', bin_img)
@@ -188,7 +186,7 @@ def detect_grid(input, min_length):
 
 def detect_shape_contours(x, y, cell):
     cv2.imwrite("cell%d%draw.png" % (x, y), cell)
-    ret, thresh = cv2.threshold(cell, 127, 255, cv2.THRESH_BINARY)
+    ret, thresh = cv2.threshold(cell, 110, 255, cv2.THRESH_BINARY) # TODO: Adapt threshold
     cv2.imwrite("cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
