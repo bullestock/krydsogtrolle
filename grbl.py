@@ -13,6 +13,7 @@ class Grbl:
                  serial_port = "/dev/ttyUSB0",
                  grid_size = 20,
                  home = True):
+        self.logfile = None
         self.origin_x = 0
         self.origin_y = 0
         self.pen_up_position = 650
@@ -28,16 +29,24 @@ class Grbl:
         print("Opened serial port")
         time.sleep(2)
         self.ser.flushInput()
-        self.ser.write(b"$X\n")
+        self.write(b"$X\n")
         self.pen_up(True)
         if home:
             print("Homing")
-            self.ser.write(b"$H\n")
+            self.write(b"$H\n")
         else:
             print("WARNING: Unlocked")
         time.sleep(0.5)
         self.wait_for_ok()
 
+    def enable_logging(self):
+        self.logfile = open("grbl.log", "w")
+
+    def write(self, s):
+        if self.logfile:
+            self.logfile.write(s.decode('ascii'))
+        self.ser.write(s)
+        
     def set_origin(self, x, y):
         self.origin_x = x
         self.origin_y = y
@@ -59,7 +68,7 @@ class Grbl:
 
     def goto(self, x, y, speed=10000):
         #print("Go to %d, %d" % (x, y))
-        self.ser.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
+        self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
         self.wait_for_ok()
         while True:
             self.ser.write(b"?")
@@ -73,7 +82,7 @@ class Grbl:
     def pen_up(self, up):
         #print("Pen %s" % ('up' if up else 'down'))
         pos = self.pen_up_position if up else self.pen_down_position
-        self.ser.write(b"G4P0M3S%d\n" % pos)
+        self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
         time.sleep(0.2)
 
@@ -113,12 +122,12 @@ class Grbl:
         # G2 X8.0000Y10.0000 i2.0000j0 z-0.0625
         if not speed:
             speed = self.draw_speed
-        self.ser.write(b"G0X%dY%d\n" % (-(x-radius), y))
-        self.ser.write(b"G1F%d\n" % speed)
-        self.ser.write(b"G2X%dY%dI%dJ0\n" % (-(x-radius), y, radius))
+        self.write(b"G0X%dY%d\n" % (-(x-radius), y))
+        self.write(b"G1F%d\n" % speed)
+        self.write(b"G2X%dY%dI%dJ0\n" % (-(x-radius), y, radius))
         self.wait_for_ok()
         while True:
-            self.ser.write(b"?")
+            self.write(b"?")
             reply = self.ser.readline().strip()
             if len(reply) > 0:
                 parts = reply.split(b"|")
