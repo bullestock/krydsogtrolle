@@ -220,6 +220,7 @@ args = parser.parse_args()
 plotter = None
 if not args.noplotter:
     plotter = grbl.Grbl(grid_size = GRID_SIZE)
+    plotter.enable_logging()
     plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 
 board = Tic()
@@ -228,6 +229,7 @@ progress('Detecting paper')
 paper, avg = detect_paper_boundaries()
 print(avg)
 print('Average paper pixel value %s' % avg)
+avg = avg - 10
 pen = compute_pen_boundaries()
 active_square = get_next_square()
 active_square_origin = (pen[0][0] + active_square[0] * SQUARE_SIZE,
