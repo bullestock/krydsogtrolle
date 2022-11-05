@@ -184,9 +184,9 @@ def detect_grid(input, min_length):
 
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
-def detect_shape_contours(x, y, cell):
+def detect_shape_contours(x, y, threshold, cell):
     cv2.imwrite("cell%d%draw.png" % (x, y), cell)
-    ret, thresh = cv2.threshold(cell, 110, 255, cv2.THRESH_BINARY) # TODO: Adapt threshold
+    ret, thresh = cv2.threshold(cell, threshold, 255, cv2.THRESH_BINARY)
     cv2.imwrite("cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
@@ -216,7 +216,7 @@ def detect_shape_contours(x, y, cell):
     print("cell%d%d: %d %f -> %c" % (x, y, nonzero, solidity, symbol))
     return symbol
 
-def detect_symbols(pic, xx, yy):
+def detect_symbols(pic, xx, yy, avg):
     """
     Return 9-character string with X, O or space
     """
@@ -235,7 +235,7 @@ def detect_symbols(pic, xx, yy):
             x1 = int(x*dx)
             x2 = int((x+1)*dx) 
             cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-            sym = detect_shape_contours(x, y, cell)
+            sym = detect_shape_contours(x, y, avg, cell)
             symbols = symbols + sym
     return symbols
                 

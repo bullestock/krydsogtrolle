@@ -51,7 +51,7 @@ def get_paper_frame(paper):
     frame = frame[paper[0][1]:paper[1][1], paper[0][0]:paper[1][0]]
     return frame
     
-# Get paper boundaries in camera coordinates
+# Return a tuple of (paper boundaries in camera coordinates, average intensity of paper area)
 def detect_paper_boundaries():
     frame = get_frame()
     cv2.imwrite('paper.png', frame)
@@ -86,7 +86,13 @@ def detect_paper_boundaries():
             ymax = max(ymax, c[1])
         else:
             ymin = min(ymin, c[1])
-    return ((xmin, ymin), (xmax, ymax))
+    boundaries = ((xmin, ymin), (xmax, ymax))
+    wd = int((xmax - xmin)/4)
+    hd = int((ymax - ymin)/4)
+    paper_frame = cv2.cvtColor(frame[ymin+hd:ymax-hd, xmin+wd:xmax-wd], cv2.COLOR_BGR2GRAY)
+    #cv2.imwrite('paper_frame.png', paper_frame)
+    avg = cv2.mean(paper_frame) # (avg, 0, 0, 0)
+    return (boundaries, int(avg[0]))
 
 # Compute pen boundaries in GRBL coordinates
 def compute_pen_boundaries():
@@ -131,8 +137,8 @@ def detect_grid_position(paper, pen, active_square):
     # Cut out active square
     paper_width = paper[1][0] - paper[0][0]
     paper_height = paper[1][1] - paper[0][1]
-    assert (paper_width/paper_height > 1.3) and (paper_width/paper_height < 1.5), 'wrong paper aspect ratio'
     print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
+    assert (paper_width/paper_height > 1.3) and (paper_width/paper_height < 1.5), 'wrong paper aspect ratio'
     square_w = int(paper_width/MAX_X_SQUARE)
     x2 = int((MAX_X_SQUARE - active_square[0])*square_w)
     x1 = int(x2 - square_w)
@@ -219,7 +225,9 @@ if not args.noplotter:
 board = Tic()
 
 progress('Detecting paper')
-paper = detect_paper_boundaries()
+paper, avg = detect_paper_boundaries()
+print(avg)
+print('Average paper pixel value %s' % avg)
 pen = compute_pen_boundaries()
 active_square = get_next_square()
 active_square_origin = (pen[0][0] + active_square[0] * SQUARE_SIZE,
@@ -253,7 +261,7 @@ while not game_over:
         pic, xx, yy = detect_grid_position(paper, pen, active_square)
         pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
         print("detect_grid_position: %s, %s" % (xx, yy))
-        cur_symbols = detect.detect_symbols(pic, xx, yy)
+        cur_symbols = detect.detect_symbols(pic, xx, yy, avg)
         prefix = 'Board: '
         print("%s%s" % (prefix, print_board(cur_symbols, len(prefix))))
 
