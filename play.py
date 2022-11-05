@@ -232,8 +232,8 @@ print('Average paper pixel value %s' % avg)
 avg = avg - 10
 pen = compute_pen_boundaries()
 active_square = get_next_square()
-active_square_origin = (pen[0][0] + active_square[0] * SQUARE_SIZE,
-                        pen[0][1] + active_square[1] * SQUARE_SIZE)
+active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
+                        GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
 print("Active square: %s" % str(active_square_origin))
 
 # start main game loop
@@ -296,7 +296,7 @@ while not game_over:
     my_symbol = get_enemy(human_symbol)
     print('Determining move for %c' % my_symbol)
     computer_move = determine(board, my_symbol)
-    print('Placing %c at %d' % (my_symbol, computer_move))
+    progress('Playing %c at %d' % (my_symbol, computer_move))
     if plotter:
         print('set')
         plotter.set_symbol(my_symbol)
