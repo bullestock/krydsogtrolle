@@ -5,8 +5,8 @@ import numpy
 import subprocess
 import detect
 import display
+from getkey import getkey, keys
 from alphabeta import Tic, get_enemy, determine
-from pynput import keyboard
 from shapely.geometry import LineString, Point
 
 port = 0
@@ -189,26 +189,14 @@ def print_board(s, pad):
     return "%s\n%s%s\n%s%s" % (s[0:3], pre, s[3:6], pre, s[6:9])
 
 def wait_for_human_move():
-    input('Please make your move')
+    print('Please make your move')
+    key = wait_key()
+    print('%s was pressed' % key)
     print('OK!')
 
-def wait_key():
-    ''' Wait for a key press on the console and return it. '''
-    result = None
-    def on_press(key):
-        nonlocal result
-        result = key
-
-    def on_release(key):
-        # Stop listener
-        return False
-
-    # Collect events until released
-    with keyboard.Listener(
-            on_press=on_press,
-            on_release=on_release) as listener:
-        listener.join()    
-    return result
+def wait_key2():
+    key = getkey()
+    return key
 
 # --- main ---
 
@@ -231,17 +219,17 @@ print(avg)
 print('Average paper pixel value %s' % avg)
 avg = avg - 10
 pen = compute_pen_boundaries()
-active_square = get_next_square()
-active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
-                        GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
-print("Active square: %s" % str(active_square_origin))
 
-# start main game loop
+# start main loop
 prev_symbols = BLANK_BOARD
 human_symbol = None
 game_over = False
 
-while not game_over:
+while True:
+    active_square = get_next_square()
+    active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
+                            GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
+    print("Active square: %s" % str(active_square_origin))
     
     if plotter:
         # Set the origin
@@ -252,11 +240,14 @@ while not game_over:
         # Make room for the human
         present(plotter, active_square_origin)
 
-    # Wait for human move and detect new symbol
-    new_symbol = None
-    while not new_symbol:
-        progress('Waiting for move')
-        wait_for_human_move()
+    # start game loop
+    while not game_over:
+
+        # Wait for human move and detect new symbol
+        new_symbol = None
+        while not new_symbol:
+            progress('Waiting for move')
+            wait_for_human_move()
 
         # Detect position of the grid
         progress('Detecting symbols')
@@ -276,39 +267,38 @@ while not game_over:
                     fatal_error('more than one new symbol')
                 new_symbol = (i, cur_symbols[i])
 
-    new_symbol_x = index_to_x(new_symbol[0])
-    new_symbol_y = index_to_y(new_symbol[0])
-    print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
-    display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
-    if human_symbol is None:
-        human_symbol = new_symbol[1]
-        print('Human is playing %c' % human_symbol)
-    elif new_symbol[1] != human_symbol:
-        fatal_error('Illegal human move: %c' % new_symbol[1])
+        new_symbol_x = index_to_x(new_symbol[0])
+        new_symbol_y = index_to_y(new_symbol[0])
+        print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+        display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+        if human_symbol is None:
+            human_symbol = new_symbol[1]
+            print('Human is playing %c' % human_symbol)
+        elif new_symbol[1] != human_symbol:
+            fatal_error('Illegal human move: %c' % new_symbol[1])
 
-    board.make_move(new_symbol[0], new_symbol[1])
-    if board.complete():
-        game_over = True
-        display.show(1, '*** GAME OVER ***')
-        print('Game over!')
-        break
+        board.make_move(new_symbol[0], new_symbol[1])
+        if board.complete():
+            game_over = True
+            display.show(1, '*** GAME OVER ***')
+            print('Game over!')
+            break
 
-    my_symbol = get_enemy(human_symbol)
-    print('Determining move for %c' % my_symbol)
-    computer_move = determine(board, my_symbol)
-    progress('Playing %c at %d' % (my_symbol, computer_move))
-    if plotter:
-        print('set')
-        plotter.set_symbol(my_symbol)
-        print('draw')
-        plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
-    print('make move')
-    board.make_move(computer_move, my_symbol)
+        my_symbol = get_enemy(human_symbol)
+        print('Determining move for %c' % my_symbol)
+        computer_move = determine(board, my_symbol)
+        progress('Playing %c at %d' % (my_symbol, computer_move))
+        if plotter:
+            print('set')
+            plotter.set_symbol(my_symbol)
+            print('draw')
+            plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
+        print('make move')
+        board.make_move(computer_move, my_symbol)
 
-    print('check complete')
-    if board.complete():
-        game_over = True
-        display.show(1, '*** GAME OVER ***')
-        print('Game over!')
-        break
-    
+        print('check complete')
+        if board.complete():
+            game_over = True
+            display.show(1, '*** GAME OVER ***')
+            print('Game over!')
+            break
