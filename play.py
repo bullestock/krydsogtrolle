@@ -21,6 +21,9 @@ GRID_SIZE = 15
 SQUARE_SIZE = 5*GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
+# Pixel offset of GRBL zero
+PIXEL_ZERO = (1292, 1017)
+SQUARE_PIXELS = 300
 
 BLANK_BOARD = '         '
 
@@ -141,21 +144,21 @@ def detect_grid_position(paper, pen, active_square):
     print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
     aspect_ratio = paper_width/paper_height
     assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
-    square_w = int(paper_width/MAX_X_SQUARE)
+    square_w = SQUARE_PIXELS
     x2 = int((MAX_X_SQUARE - active_square[0])*square_w)
     x1 = int(x2 - square_w)
     if x2 < paper_width - square_w//2:
         x2 = x2 + square_w//2
     if x1 > square_w//2:
         x1 = x1 - square_w//2
-    square_h = int(paper_height/MAX_Y_SQUARE)
+    square_h = SQUARE_PIXELS
     y2 = int((MAX_Y_SQUARE - active_square[1])*square_h)
     y1 = int(y2 - square_h)
     if y2 < paper_height - square_h//2:
         y2 = y2 + square_h//2
     if y1 > square_h//2:
         y1 = y1 - square_h//2
-    print(x1, x2, y1, y2)
+    print('Grid boundary: (%d, %d) (%d, %d)' % (x1, y1, x2, y2))
     frame = frame[y1:y2, x1:x2]
     cv2.imwrite("png/frame-square.png", frame)
     # Detect grid
@@ -304,9 +307,7 @@ while True:
             computer_move = determine(board, my_symbol)
             progress('Playing %c at %d' % (my_symbol, computer_move))
             if plotter:
-                print('set')
-                plotter.set_symbol(my_symbol)
-                print('draw')
+                plotter.set_symbol(Grbl.Symbol.CROSS if my_symbol == 'X' else Grbl.Symbol.NOUGHT)
                 plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
             print('make move')
             board.make_move(computer_move, my_symbol)
