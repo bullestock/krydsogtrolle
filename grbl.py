@@ -123,6 +123,7 @@ class Grbl:
         if not speed:
             speed = self.draw_speed
         self.write(b"G0X%dY%d\n" % (-(x-radius), y))
+        self.pen_up(False)
         self.write(b"G1F%d\n" % speed)
         self.write(b"G2X%dY%dI%dJ0\n" % (-(x-radius), y, radius))
         self.wait_for_ok()
@@ -134,6 +135,7 @@ class Grbl:
                 if parts[0] == b'<Idle':
                     break
             time.sleep(0.1)
+        self.pen_up(True)
         
     def draw_symbol(self, x, y):
         self.pen_up(True)

@@ -32,16 +32,16 @@ def detect_grid(input, min_length):
     gray = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
 
     if DEBUG:
-        cv2.imwrite('gray.png', gray)
+        cv2.imwrite('png/gray.png', gray)
 
     blur = cv2.medianBlur(gray, 5)
     if DEBUG:
-        cv2.imwrite('blur.png', blur)
+        cv2.imwrite('png/blur.png', blur)
     thresh_type = cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
     ret, bin_img = cv2.threshold(gray, 128, 255, thresh_type)
     print("Threshold: %d" % ret)
     if DEBUG:
-        cv2.imwrite('bin.png', bin_img)
+        cv2.imwrite('png/bin.png', bin_img)
 
     rho = 1  # distance resolution in pixels of the Hough grid
     theta = numpy.pi / 180  # angular resolution in radians of the Hough grid
@@ -185,9 +185,9 @@ def detect_grid(input, min_length):
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
 def detect_shape_contours(x, y, threshold, cell):
-    cv2.imwrite("cell%d%draw.png" % (x, y), cell)
+    cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
     ret, thresh = cv2.threshold(cell, threshold, 255, cv2.THRESH_BINARY)
-    cv2.imwrite("cell%d%dthres.png" % (x, y), thresh)
+    cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
     nonzero = height*width - cv2.countNonZero(thresh)
@@ -205,7 +205,7 @@ def detect_shape_contours(x, y, threshold, cell):
     cnt = contours[largest_idx]
     cell = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
     cv2.drawContours(cell, [cnt], -1, (255,0,0), 3)
-    cv2.imwrite("cell%d%d.png" % (x, y), cell)
+    cv2.imwrite("png/cell%d%d.png" % (x, y), cell)
     area = cv2.contourArea(cnt)
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
@@ -222,7 +222,7 @@ def detect_symbols(pic, xx, yy, avg):
     """
     print("detect_symbols: %s, %s" % (xx, yy))
     grid_pic = pic[yy[0]:yy[1], xx[0]:xx[1]]
-    cv2.imwrite("grid_pic.png", grid_pic)
+    cv2.imwrite("png/grid_pic.png", grid_pic)
 
     dx = (xx[1] - xx[0])/3
     dy = (yy[1] - yy[0])/3
@@ -243,10 +243,10 @@ if __name__ == "__main__":
     input = cv2.imread('slice.png')
     K = 8
     quantized = quantize(input, K)
-    cv2.imwrite('quant.png', quantized)
+    cv2.imwrite('png/quant.png', quantized)
     h, v, xx, yy, output, nolines = detect_grid(quantized, 150)
-    cv2.imwrite('out.png', output)
-    cv2.imwrite('nolines.png', nolines)
+    cv2.imwrite('png/out.png', output)
+    cv2.imwrite('png/nolines.png', nolines)
 
     gray = cv2.cvtColor(nolines, cv2.COLOR_BGR2GRAY)
 

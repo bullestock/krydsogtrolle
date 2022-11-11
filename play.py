@@ -2,6 +2,7 @@ import argparse
 import cv2
 import grbl
 import numpy
+import os
 import subprocess
 import detect
 import display
@@ -54,8 +55,8 @@ def get_paper_frame(paper):
 # Return a tuple of (paper boundaries in camera coordinates, average intensity of paper area)
 def detect_paper_boundaries():
     frame = get_frame()
-    cv2.imwrite('paper.png', frame)
-    out = subprocess.run(["./a4detect", 'paper.png'], capture_output=True)
+    cv2.imwrite('png/paper.png', frame)
+    out = subprocess.run(["./a4detect", 'png/paper.png'], capture_output=True)
     assert out.returncode == 0, 'a4detect failed'
     strings = out.stdout.decode().splitlines()
     #print(strings)
@@ -90,7 +91,7 @@ def detect_paper_boundaries():
     wd = int((xmax - xmin)/4)
     hd = int((ymax - ymin)/4)
     paper_frame = cv2.cvtColor(frame[ymin+hd:ymax-hd, xmin+wd:xmax-wd], cv2.COLOR_BGR2GRAY)
-    #cv2.imwrite('paper_frame.png', paper_frame)
+    #cv2.imwrite('png/paper_frame.png', paper_frame)
     avg = cv2.mean(paper_frame) # (avg, 0, 0, 0)
     return (boundaries, int(avg[0]))
 
@@ -133,12 +134,13 @@ def enlarge(area, amount):
 def detect_grid_position(paper, pen, active_square):
     get_frame() # flush old frame
     frame = get_paper_frame(paper)
-    cv2.imwrite("frame-paper.png", frame)
+    cv2.imwrite("png/frame-paper.png", frame)
     # Cut out active square
     paper_width = paper[1][0] - paper[0][0]
     paper_height = paper[1][1] - paper[0][1]
     print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
-    assert (paper_width/paper_height > 1.3) and (paper_width/paper_height < 1.5), 'wrong paper aspect ratio'
+    aspect_ratio = paper_width/paper_height
+    assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
     square_w = int(paper_width/MAX_X_SQUARE)
     x2 = int((MAX_X_SQUARE - active_square[0])*square_w)
     x1 = int(x2 - square_w)
@@ -155,12 +157,12 @@ def detect_grid_position(paper, pen, active_square):
         y1 = y1 - square_h//2
     print(x1, x2, y1, y2)
     frame = frame[y1:y2, x1:x2]
-    cv2.imwrite("frame-square.png", frame)
+    cv2.imwrite("png/frame-square.png", frame)
     # Detect grid
     h, v, xx, yy, output, nolines = detect.detect_grid(frame, 4*GRID_SIZE)
     print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
-    cv2.imwrite('out.png', output)
-    cv2.imwrite('nolines.png', nolines)
+    cv2.imwrite('png/out.png', output)
+    cv2.imwrite('png/nolines.png', nolines)
     return (frame, xx, yy)
     
     # area_pen = (active_square_origin, (active_square_origin[0] + SQUARE_SIZE,
@@ -172,7 +174,7 @@ def detect_grid_position(paper, pen, active_square):
     # print("Camera: %s" % str(area_cam))
     # slice = frame[area_cam[1][0]:area_cam[1][1], area_cam[0][0]:area_cam[0][1]]
     # slice = frame[1000:1400, 1300:1600]
-    # cv2.imwrite("slice.png", slice)
+    # cv2.imwrite("png/slice.png", slice)
 
 def index_to_x(index):
     return index % 3
@@ -204,6 +206,9 @@ parser = argparse.ArgumentParser(description='Play noughts and crosses.')
 parser.add_argument('-n', '--noplotter',
                     help='Do not connect to plotter', action='store_true')
 args = parser.parse_args()
+
+if not os.path.exists('png'):
+    os.makedirs('png')
 
 plotter = None
 if not args.noplotter:
