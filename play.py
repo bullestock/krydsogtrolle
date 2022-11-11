@@ -205,6 +205,8 @@ def wait_key():
 parser = argparse.ArgumentParser(description='Play noughts and crosses.')
 parser.add_argument('-n', '--noplotter',
                     help='Do not connect to plotter', action='store_true')
+parser.add_argument('-s', '--start',
+                    help='Start square (default is (0, 0))')
 args = parser.parse_args()
 
 if not os.path.exists('png'):
@@ -230,6 +232,14 @@ prev_symbols = BLANK_BOARD
 human_symbol = None
 game_over = False
 
+if args.start:
+    start_args = args.start.split(',')
+    if len(start_args) != 2:
+        fatal_error('bad argument to --start: %s' % start_args)
+    active_square_x = int(start_args[0])
+    active_square_y = int(start_args[1])
+    print('Starting at (%d, %d)' % (active_square_x, active_square_y))
+    
 while True:
     active_square = get_next_square()
     active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
