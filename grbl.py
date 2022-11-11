@@ -140,7 +140,7 @@ class Grbl:
         
     def draw_symbol(self, x, y):
         self.pen_up(True)
-        FILL = 0.7
+        FILL = 0.65
         cx = self.origin_x + (x + 0.5) * self.grid_size
         cy = self.origin_y + (y + 0.5) * self.grid_size
         d = self.grid_size/2 * FILL
