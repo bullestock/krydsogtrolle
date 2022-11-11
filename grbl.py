@@ -1,3 +1,4 @@
+import argparse
 import serial
 import time
 from enum import Enum
@@ -152,7 +153,13 @@ class Grbl:
         self.pen_up(True)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Control plotter.')
+    parser.add_argument('--goto-max',
+                        help='Go to maximum X/Y', action='store_true')
+    args = parser.parse_args()
     l = Grbl(home = True)
+    if args.goto_max:
+        l.goto(Grbl.MAX_X, Grbl.MAX_Y)
     if False:
         # Basic motion
         l.goto(10, 0)
@@ -161,7 +168,7 @@ if __name__ == "__main__":
         l.goto(50, 50)
         l.pen_up(True)
         l.goto(0, 0)
-    if True:
+    if False:
         # Grid
         xo = 100
         yo = 50
