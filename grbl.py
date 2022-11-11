@@ -156,10 +156,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Control plotter.')
     parser.add_argument('--goto-max',
                         help='Go to maximum X/Y', action='store_true')
+    parser.add_argument('--dot',
+                        help='Make a dot at the specified position')
     args = parser.parse_args()
     l = Grbl(home = True)
     if args.goto_max:
         l.goto(Grbl.MAX_X, Grbl.MAX_Y)
+        exit()
+    if args.dot:
+        dot_args = args.dot.split(',')
+        if len(dot_args) != 2:
+            fatal_error('bad argument to --dot: %s' % dot_args)
+        l.goto(int(dot_args[0]), int(dot_args[1]))
+        l.pen_up(False)
+        l.pen_up(True)
+        exit()
     if False:
         # Basic motion
         l.goto(10, 0)
