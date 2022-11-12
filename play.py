@@ -22,7 +22,7 @@ SQUARE_SIZE = 5*GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
 # Pixel offset of GRBL zero
-PIXEL_ZERO = (1292, 1017)
+PIXEL_ZERO = (1265, 1005)
 SQUARE_PIXELS = 300
 
 BLANK_BOARD = '         '
@@ -145,19 +145,20 @@ def detect_grid_position(paper, pen, active_square):
     aspect_ratio = paper_width/paper_height
     assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
     square_w = SQUARE_PIXELS
-    x2 = int((MAX_X_SQUARE - active_square[0])*square_w)
+    x2 = int(PIXEL_ZERO[0] - active_square[0]*square_w)
     x1 = int(x2 - square_w)
+    EXTRA = 0#0.2
     if x2 < paper_width - square_w//2:
-        x2 = x2 + square_w//2
+        x2 = int(x2 + EXTRA*square_w)
     if x1 > square_w//2:
-        x1 = x1 - square_w//2
+        x1 = int(x1 - EXTRA*square_w)
     square_h = SQUARE_PIXELS
-    y2 = int((MAX_Y_SQUARE - active_square[1])*square_h)
+    y2 = int(PIXEL_ZERO[1] - active_square[1]*square_h)
     y1 = int(y2 - square_h)
     if y2 < paper_height - square_h//2:
-        y2 = y2 + square_h//2
+        y2 = int(y2 + EXTRA*square_h)
     if y1 > square_h//2:
-        y1 = y1 - square_h//2
+        y1 = int(y1 - EXTRA*square_h)
     print('Grid boundary: (%d, %d) (%d, %d)' % (x1, y1, x2, y2))
     frame = frame[y1:y2, x1:x2]
     cv2.imwrite("png/frame-square.png", frame)
@@ -225,9 +226,8 @@ board = Tic()
 
 progress('Detecting paper')
 paper, avg = detect_paper_boundaries()
-print(avg)
 print('Average paper pixel value %s' % avg)
-avg = avg - 10
+avg = avg - 20
 pen = compute_pen_boundaries()
 
 # start main loop
@@ -273,6 +273,8 @@ while True:
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
             print("detect_grid_position: %s, %s" % (xx, yy))
             cur_symbols = detect.detect_symbols(pic, xx, yy, avg)
+            if not cur_symbols:
+                fatal_error('no symbols found')
             prefix = 'Board: '
             print("%s%s" % (prefix, print_board(cur_symbols, len(prefix))))
 
@@ -307,7 +309,7 @@ while True:
             computer_move = determine(board, my_symbol)
             progress('Playing %c at %d' % (my_symbol, computer_move))
             if plotter:
-                plotter.set_symbol(Grbl.Symbol.CROSS if my_symbol == 'X' else Grbl.Symbol.NOUGHT)
+                plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
                 plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
             print('make move')
             board.make_move(computer_move, my_symbol)
