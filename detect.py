@@ -186,11 +186,19 @@ def detect_grid(input, min_length):
 
 def detect_shape_contours(x, y, threshold, cell):
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
-    ret, thresh = cv2.threshold(cell, threshold, 255, cv2.THRESH_BINARY)
+    min = numpy.amin(cell)
+    max = numpy.amax(cell)
+    print("cell%d%d: %d - %d" % (x, y, min, max))
+    if max - min < 25:
+        return ' '
+    ret, thresh = cv2.threshold(cell, int((min+max)/2), 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
     nonzero = height*width - cv2.countNonZero(thresh)
+    if nonzero > 2000:
+        print('Fatal error: filled cell detected')
+        return None
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -236,6 +244,8 @@ def detect_symbols(pic, xx, yy, avg):
             x2 = int((x+1)*dx) 
             cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
             sym = detect_shape_contours(x, y, avg, cell)
+            if not sym:
+                return None
             symbols = symbols + sym
     return symbols
                 
