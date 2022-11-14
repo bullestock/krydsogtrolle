@@ -189,7 +189,7 @@ def detect_shape_contours(x, y, cell):
     min = numpy.amin(cell)
     max = numpy.amax(cell)
     print('cell%d%d: %d - %d' % (x, y, min, max))
-    if max - min < 25:
+    if max - min < 40:
         # Evenly filled cell
         return ' '
     thr = int((min + max)/2 + 0.2*(max - min))
