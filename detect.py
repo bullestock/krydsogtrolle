@@ -188,10 +188,10 @@ def detect_shape_contours(x, y, threshold, cell):
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
     min = numpy.amin(cell)
     max = numpy.amax(cell)
-    print("cell%d%d: %d - %d" % (x, y, min, max))
+    print('cell%d%d: %d - %d' % (x, y, min, max))
     if max - min < 25:
         return ' '
-    ret, thresh = cv2.threshold(cell, int((min+max)/2), 255, cv2.THRESH_BINARY)
+    ret, thresh = cv2.threshold(cell, int((min + max)/2 + 0.2*(max - min)), 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
