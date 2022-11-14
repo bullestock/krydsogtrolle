@@ -283,9 +283,11 @@ while True:
 
             for i in range(0, len(cur_symbols)):
                 if cur_symbols[i] != prev_symbols[i]:
+                    print('New: %c at %d' % (cur_symbols[i], i))
                     if new_symbol:
                         fatal_error('more than one new symbol')
                     new_symbol = (i, cur_symbols[i])
+            prev_symbols = cur_symbols
 
             new_symbol_x = index_to_x(new_symbol[0])
             new_symbol_y = index_to_y(new_symbol[0])
