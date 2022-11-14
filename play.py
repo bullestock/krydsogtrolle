@@ -242,11 +242,6 @@ progress('Detecting paper')
 paper = detect_paper_boundaries(args.skippaper)
 pen = compute_pen_boundaries()
 
-# start main loop
-prev_symbols = BLANK_BOARD
-human_symbol = None
-game_over = False
-
 if args.start:
     start_args = args.start.split(',')
     if len(start_args) != 2:
@@ -256,7 +251,13 @@ if args.start:
     print('Starting at (%d, %d)' % (active_square_x, active_square_y))
     
 while True:
+    # start new game
+    prev_symbols = BLANK_BOARD
+    human_symbol = None
+    game_over = False
     active_square = get_next_square()
+    if not active_square[0]:
+        fatal_error('out of paper')
     active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
                             GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
     print("Active square: %s" % str(active_square_origin))
