@@ -184,20 +184,22 @@ def detect_grid(input, min_length):
 
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
-def detect_shape_contours(x, y, threshold, cell):
+def detect_shape_contours(x, y, cell):
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
     min = numpy.amin(cell)
     max = numpy.amax(cell)
     print('cell%d%d: %d - %d' % (x, y, min, max))
     if max - min < 25:
+        # Evenly filled cell
         return ' '
-    ret, thresh = cv2.threshold(cell, int((min + max)/2 + 0.2*(max - min)), 255, cv2.THRESH_BINARY)
+    thr = int((min + max)/2 + 0.2*(max - min))
+    ret, thresh = cv2.threshold(cell, thr, 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
     nonzero = height*width - cv2.countNonZero(thresh)
     if nonzero > 2000:
-        print('Fatal error: filled cell detected')
+        print('Fatal error: filled cell detected (thr %d nz %d)' % (thr, nonzero))
         return None
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
@@ -221,10 +223,10 @@ def detect_shape_contours(x, y, threshold, cell):
     symbol = ' '
     if nonzero > 100 and solidity < 0.99:
         symbol = 'X' if solidity < 0.75 else 'O'
-    print("cell%d%d: %d %f -> %c" % (x, y, nonzero, solidity, symbol))
+    print("cell%d%d: nz %d thr %d sol %f -> %c" % (x, y, nonzero, thr, solidity, symbol))
     return symbol
 
-def detect_symbols(pic, xx, yy, avg):
+def detect_symbols(pic, xx, yy):
     """
     Return 9-character string with X, O or space
     """
@@ -243,7 +245,7 @@ def detect_symbols(pic, xx, yy, avg):
             x1 = int(x*dx)
             x2 = int((x+1)*dx) 
             cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-            sym = detect_shape_contours(x, y, avg, cell)
+            sym = detect_shape_contours(x, y, cell)
             if not sym:
                 return None
             symbols = symbols + sym

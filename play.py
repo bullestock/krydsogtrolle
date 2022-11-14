@@ -1,6 +1,7 @@
 import argparse
 import cv2
 import grbl
+import json
 import numpy
 import os
 import subprocess
@@ -55,48 +56,58 @@ def get_paper_frame(paper):
     frame = frame[paper[0][1]:paper[1][1], paper[0][0]:paper[1][0]]
     return frame
     
-# Return a tuple of (paper boundaries in camera coordinates, average intensity of paper area)
-def detect_paper_boundaries():
+# Return paper boundaries in camera coordinates
+def detect_paper_boundaries(skip_paper_detection):
     frame = get_frame()
     cv2.imwrite('png/paper.png', frame)
-    out = subprocess.run(["./a4detect", 'png/paper.png'], capture_output=True)
-    assert out.returncode == 0, 'a4detect failed'
-    strings = out.stdout.decode().splitlines()
-    #print(strings)
-    coords = []
-    for s in strings:
-        words = s.split(',')
-        bounds = [int(x) for x in words]
-        coords.append([bounds[0], bounds[1]])
-        coords.append([bounds[2], bounds[3]])
-    #print(coords)
-    xsum = 0
-    ysum = 0
-    for c in coords:
-        xsum = xsum + c[0]
-        ysum = ysum + c[1]
-    xavg = xsum/len(coords)
-    yavg = ysum/len(coords)
-    xmin = 99999
-    xmax = 0
-    ymin = 99999
-    ymax = 0
-    for c in coords:
-        if c[0] > xavg:
-            xmax = max(xmax, c[0])
-        else:
-            xmin = min(xmin, c[0])
-        if c[1] > yavg:
-            ymax = max(ymax, c[1])
-        else:
-            ymin = min(ymin, c[1])
+    if skip_paper_detection:
+        with open('paper.json', 'r') as f:
+            saved = json.load(f)
+            xmin = saved['xmin']
+            xmax = saved['xmax']
+            ymin = saved['ymin']
+            ymax = saved['ymax']
+            hd = saved['height']
+            wd = saved['width']
+    else:
+        out = subprocess.run(["./a4detect", 'png/paper.png'], capture_output=True)
+        assert out.returncode == 0, 'a4detect failed'
+        strings = out.stdout.decode().splitlines()
+        coords = []
+        for s in strings:
+            words = s.split(',')
+            bounds = [int(x) for x in words]
+            coords.append([bounds[0], bounds[1]])
+            coords.append([bounds[2], bounds[3]])
+        xsum = 0
+        ysum = 0
+        for c in coords:
+            xsum = xsum + c[0]
+            ysum = ysum + c[1]
+        xavg = xsum/len(coords)
+        yavg = ysum/len(coords)
+        xmin = 99999
+        xmax = 0
+        ymin = 99999
+        ymax = 0
+        for c in coords:
+            if c[0] > xavg:
+                xmax = max(xmax, c[0])
+            else:
+                xmin = min(xmin, c[0])
+            if c[1] > yavg:
+                ymax = max(ymax, c[1])
+            else:
+                ymin = min(ymin, c[1])
+        wd = int((xmax - xmin)/4)
+        hd = int((ymax - ymin)/4)
+        saved = { 'xmin': xmin, 'xmax': xmax,
+                  'ymin': ymin, 'ymax': ymax,
+                  'height': hd, 'width': wd }
+        with open("paper.json", "w") as f:
+            json.dump(saved, f)
     boundaries = ((xmin, ymin), (xmax, ymax))
-    wd = int((xmax - xmin)/4)
-    hd = int((ymax - ymin)/4)
-    paper_frame = cv2.cvtColor(frame[ymin+hd:ymax-hd, xmin+wd:xmax-wd], cv2.COLOR_BGR2GRAY)
-    #cv2.imwrite('png/paper_frame.png', paper_frame)
-    avg = cv2.mean(paper_frame) # (avg, 0, 0, 0)
-    return (boundaries, int(avg[0]))
+    return boundaries
 
 # Compute pen boundaries in GRBL coordinates
 def compute_pen_boundaries():
@@ -211,6 +222,9 @@ parser.add_argument('-n', '--noplotter',
                     help='Do not connect to plotter', action='store_true')
 parser.add_argument('-s', '--start',
                     help='Start square (default is (0, 0))')
+parser.add_argument('-p', '--skippaper',
+                    help='Do not detect paper boundaries (reuse previous)',
+                    action='store_true')
 args = parser.parse_args()
 
 if not os.path.exists('png'):
@@ -225,9 +239,7 @@ if not args.noplotter:
 board = Tic()
 
 progress('Detecting paper')
-paper, avg = detect_paper_boundaries()
-print('Average paper pixel value %s' % avg)
-avg = avg - 20
+paper = detect_paper_boundaries(args.skippaper)
 pen = compute_pen_boundaries()
 
 # start main loop
@@ -272,7 +284,7 @@ while True:
             pic, xx, yy = detect_grid_position(paper, pen, active_square)
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
             print("detect_grid_position: %s, %s" % (xx, yy))
-            cur_symbols = detect.detect_symbols(pic, xx, yy, avg)
+            cur_symbols = detect.detect_symbols(pic, xx, yy)
             if not cur_symbols:
                 fatal_error('no symbols found')
             prefix = 'Board: '
