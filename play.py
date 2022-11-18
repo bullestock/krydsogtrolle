@@ -26,7 +26,7 @@ MAX_Y_SQUARE = 3
 PIXEL_ZERO = (1265, 1005)
 SQUARE_PIXELS = 300
 
-BLANK_BOARD = '         '
+BLANK_BOARD = ['-']*9
 
 active_square_x = 0
 active_square_y = 0
@@ -288,7 +288,9 @@ while True:
             cur_symbols = detect.detect_symbols(pic, xx, yy)
             if not cur_symbols:
                 fatal_error('no symbols found')
-            prefix = 'Board: '
+            prefix = 'Old: '
+            print("%s%s" % (prefix, print_board(prev_symbols, len(prefix))))
+            prefix = 'New: '
             print("%s%s" % (prefix, print_board(cur_symbols, len(prefix))))
 
             if len(cur_symbols) != len(prev_symbols):
@@ -328,11 +330,9 @@ while True:
         prev_symbols[computer_move] = my_symbol
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
-            plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
-        print('make move')
+            plotter.draw_symbol(2 - index_to_x(computer_move), 2 - index_to_y(computer_move))
         board.make_move(computer_move, my_symbol)
 
-        print('check complete')
         if board.complete():
             game_over = True
             display.show(1, '*** GAME OVER ***')

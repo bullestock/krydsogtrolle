@@ -191,7 +191,7 @@ def detect_shape_contours(x, y, cell):
     print('cell%d%d: %d - %d' % (x, y, min, max))
     if max - min < 40:
         # Evenly filled cell
-        return ' '
+        return '-'
     thr = int((min + max)/2 + 0.2*(max - min))
     ret, thresh = cv2.threshold(cell, thr, 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
@@ -220,7 +220,7 @@ def detect_shape_contours(x, y, cell):
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
     solidity = float(area)/hull_area
-    symbol = ' '
+    symbol = '-'
     if nonzero > 100 and solidity < 0.99:
         symbol = 'X' if solidity < 0.75 else 'O'
     print("cell%d%d: nz %d thr %d sol %f -> %c" % (x, y, nonzero, thr, solidity, symbol))
@@ -228,7 +228,7 @@ def detect_shape_contours(x, y, cell):
 
 def detect_symbols(pic, xx, yy):
     """
-    Return 9-character string with X, O or space
+    Return 9-character array with X, O or -
     """
     print("detect_symbols: %s, %s" % (xx, yy))
     grid_pic = pic[yy[0]:yy[1], xx[0]:xx[1]]
@@ -237,7 +237,7 @@ def detect_symbols(pic, xx, yy):
     dx = (xx[1] - xx[0])/3
     dy = (yy[1] - yy[0])/3
     MARGIN=7
-    symbols = ''
+    symbols = []
     for y in range(0, 3):
         for x in range(0, 3):
             y1 = int(y*dy)
@@ -248,7 +248,7 @@ def detect_symbols(pic, xx, yy):
             sym = detect_shape_contours(x, y, cell)
             if not sym:
                 return None
-            symbols = symbols + sym
+            symbols.append(sym)
     return symbols
                 
 if __name__ == "__main__":
