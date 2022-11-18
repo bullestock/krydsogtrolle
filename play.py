@@ -18,8 +18,9 @@ cam.set(cv2.CAP_PROP_BUFFERSIZE, 1) # don't store old frames
 display = display.Display()
 display.show(0, 'Starting')
 
-GRID_SIZE = 15
-SQUARE_SIZE = 5*GRID_SIZE
+GRBL_GRID_SIZE = 15
+CAM_GRID_SIZE = 60
+SQUARE_SIZE = 5*GRBL_GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
 # Pixel offset of GRBL zero
@@ -174,23 +175,12 @@ def detect_grid_position(paper, pen, active_square):
     frame = frame[y1:y2, x1:x2]
     cv2.imwrite("png/frame-square.png", frame)
     # Detect grid
-    h, v, xx, yy, output, nolines = detect.detect_grid(frame, 4*GRID_SIZE)
+    h, v, xx, yy, output, nolines = detect.detect_grid(frame, 3*CAM_GRID_SIZE)
     print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
     cv2.imwrite('png/out.png', output)
     cv2.imwrite('png/nolines.png', nolines)
     return (frame, xx, yy)
     
-    # area_pen = (active_square_origin, (active_square_origin[0] + SQUARE_SIZE,
-    #                                    active_square_origin[1] + SQUARE_SIZE))
-    # area_pen = enlarge(area_pen, GRID_SIZE/2)
-    # print("Pen: %s" % str(area_pen))
-    # area_cam = (convert_pen_to_paper(paper, pen, area_pen[0]),
-    #             convert_pen_to_paper(paper, pen, area_pen[1]))
-    # print("Camera: %s" % str(area_cam))
-    # slice = frame[area_cam[1][0]:area_cam[1][1], area_cam[0][0]:area_cam[0][1]]
-    # slice = frame[1000:1400, 1300:1600]
-    # cv2.imwrite("png/slice.png", slice)
-
 def index_to_x(index):
     return index % 3
 
@@ -232,7 +222,7 @@ if not os.path.exists('png'):
 
 plotter = None
 if not args.noplotter:
-    plotter = grbl.Grbl(grid_size = GRID_SIZE)
+    plotter = grbl.Grbl(grid_size = GRBL_GRID_SIZE)
     plotter.enable_logging()
     plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 
@@ -258,8 +248,8 @@ while True:
     active_square = get_next_square()
     if active_square[0] is None:
         fatal_error('out of paper')
-    active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
-                            GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
+    active_square_origin = (GRBL_GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
+                            GRBL_GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
     print("Active square: %s" % str(active_square_origin))
     
     if plotter:
