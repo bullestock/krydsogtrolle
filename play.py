@@ -256,7 +256,7 @@ while True:
     human_symbol = None
     game_over = False
     active_square = get_next_square()
-    if not active_square[0]:
+    if active_square[0] is None:
         fatal_error('out of paper')
     active_square_origin = (GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
                             GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
@@ -300,41 +300,44 @@ while True:
                     if new_symbol:
                         fatal_error('more than one new symbol')
                     new_symbol = (i, cur_symbols[i])
-            prev_symbols = cur_symbols
 
-            new_symbol_x = index_to_x(new_symbol[0])
-            new_symbol_y = index_to_y(new_symbol[0])
-            print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
-            display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
-            if human_symbol is None:
-                human_symbol = new_symbol[1]
-                print('Human is playing %c' % human_symbol)
-            elif new_symbol[1] != human_symbol:
-                fatal_error('Illegal human move: %c' % new_symbol[1])
+        prev_symbols = cur_symbols
 
-            board.make_move(new_symbol[0], new_symbol[1])
-            if board.complete():
-                game_over = True
-                display.show(1, '*** GAME OVER ***')
-                print('Game over!')
-                break
+        new_symbol_x = index_to_x(new_symbol[0])
+        new_symbol_y = index_to_y(new_symbol[0])
+        print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+        display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+        if human_symbol is None:
+            human_symbol = new_symbol[1]
+            print('Human is playing %c' % human_symbol)
+        elif new_symbol[1] != human_symbol:
+            fatal_error('Illegal human move: %c' % new_symbol[1])
 
-            my_symbol = get_enemy(human_symbol)
-            print('Determining move for %c' % my_symbol)
-            computer_move = determine(board, my_symbol)
-            progress('Playing %c at %d' % (my_symbol, computer_move))
-            if plotter:
-                plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
-                plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
-            print('make move')
-            board.make_move(computer_move, my_symbol)
+        board.make_move(new_symbol[0], new_symbol[1])
+        if board.complete():
+            game_over = True
+            display.show(1, '*** GAME OVER ***')
+            print('Game over!')
+            break
 
-            print('check complete')
-            if board.complete():
-                game_over = True
-                display.show(1, '*** GAME OVER ***')
-                print('Game over!')
-                break
+        my_symbol = get_enemy(human_symbol)
+        print('Determining move for %c' % my_symbol)
+        computer_move = determine(board, my_symbol)
+        progress('Playing %c at %d' % (my_symbol, computer_move))
+        cur_symbols[computer_move] = my_symbol
+        prev_symbols[computer_move] = my_symbol
+        if plotter:
+            plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
+            plotter.draw_symbol(index_to_x(computer_move), index_to_y(computer_move))
+        print('make move')
+        board.make_move(computer_move, my_symbol)
 
-            # Make room for human
-            present(plotter, active_square_origin)
+        print('check complete')
+        if board.complete():
+            game_over = True
+            display.show(1, '*** GAME OVER ***')
+            print('Game over!')
+            break
+
+        # Make room for human
+        present(plotter, active_square_origin)
