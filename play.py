@@ -191,10 +191,6 @@ def fatal_error(msg):
     print('FATAL: %s' % msg)
     quit()
 
-def print_board(s, pad):
-    pre = pad * ' '
-    return "%s\n%s%s\n%s%s" % (s[0:3], pre, s[3:6], pre, s[6:9])
-
 def wait_for_human_move():
     print('Please make your move')
     key = wait_key()
@@ -226,8 +222,6 @@ if not args.noplotter:
     plotter.enable_logging()
     plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 
-board = Tic()
-
 progress('Detecting paper')
 paper = detect_paper_boundaries(args.skippaper)
 pen = compute_pen_boundaries()
@@ -242,7 +236,8 @@ if args.start:
     
 while True:
     # start new game
-    prev_symbols = BLANK_BOARD
+    cur_squares = [None for i in range(9)]
+    board = Tic(cur_squares)
     human_symbol = None
     game_over = False
     active_square = get_next_square()
@@ -262,9 +257,11 @@ while True:
         present(plotter, active_square_origin)
 
     # start game loop
+    first = True
     while not game_over:
 
         # Wait for human move and detect new symbol
+        cur_squares = board.get_board()
         new_symbol = None
         while not new_symbol:
             progress('Waiting for move')
@@ -275,25 +272,27 @@ while True:
             pic, xx, yy = detect_grid_position(paper, pen, active_square)
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
             print("detect_grid_position: %s, %s" % (xx, yy))
-            cur_symbols = detect.detect_symbols(pic, xx, yy)
-            if not cur_symbols:
-                fatal_error('no symbols found')
-            prefix = 'Old: '
-            print("%s%s" % (prefix, print_board(prev_symbols, len(prefix))))
-            prefix = 'New: '
-            print("%s%s" % (prefix, print_board(cur_symbols, len(prefix))))
+            new_squares = detect.detect_symbols(pic, xx, yy)
+            if not new_squares:
+                if not first:
+                    fatal_error('no symbols found')
+            else:
+                print('Old:')
+                board.show()
+                print('New:')
+                board.show(new_squares)
 
-            if len(cur_symbols) != len(prev_symbols):
-                fatal_error('board size changed')
+                if len(new_squares) != len(cur_squares):
+                    fatal_error('board size changed')
 
-            for i in range(0, len(cur_symbols)):
-                if cur_symbols[i] != prev_symbols[i]:
-                    print('New: %c at %d' % (cur_symbols[i], i))
-                    if new_symbol:
-                        fatal_error('more than one new symbol')
-                    new_symbol = (i, cur_symbols[i])
-
-        prev_symbols = cur_symbols
+                for i in range(0, len(new_squares)):
+                    if new_squares[i] != cur_squares[i]:
+                        if not new_squares[i]:
+                            fatal_error('New symbol at %d is None' % i)
+                        print('New: %c at %d' % (new_squares[i], i))
+                        if new_symbol:
+                            fatal_error('more than one new symbol')
+                        new_symbol = (i, new_squares[i])
 
         new_symbol_x = index_to_x(new_symbol[0])
         new_symbol_y = index_to_y(new_symbol[0])
@@ -316,8 +315,6 @@ while True:
         print('Determining move for %c' % my_symbol)
         computer_move = determine(board, my_symbol)
         progress('Playing %c at %d' % (my_symbol, computer_move))
-        cur_symbols[computer_move] = my_symbol
-        prev_symbols[computer_move] = my_symbol
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
             plotter.draw_symbol(2 - index_to_x(computer_move), 2 - index_to_y(computer_move))

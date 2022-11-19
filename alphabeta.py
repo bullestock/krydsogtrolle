@@ -3,9 +3,7 @@ Alphabeta algorithm. All credit goes to cwoebker and his Python implementation
 of the algorithm. Source code is in https://cbwoebker.com/posts/tic-tac-toe.
 """
 
-
 import random
-
 
 class Tic(object):
 
@@ -22,10 +20,13 @@ class Tic(object):
         else:
             self.squares = squares
 
-    def show(self):
+    def show(self, board=None):
         """Print game progress"""
+        squares = board
+        if not squares:
+            squares = self.squares
         for element in [
-                self.squares[i: i + 3] for i in range(0, len(self.squares), 3)]:
+                squares[i: i + 3] for i in range(0, len(squares), 3)]:
             print(element)
 
     def available_moves(self):
@@ -69,6 +70,9 @@ class Tic(object):
 
     def make_move(self, position, player):
         self.squares[position] = player
+
+    def get_board(self):
+        return self.squares
 
     def alphabeta(self, node, player, alpha, beta):
         """Alphabeta algorithm"""

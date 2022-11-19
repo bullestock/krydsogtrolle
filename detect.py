@@ -191,7 +191,7 @@ def detect_shape_contours(x, y, cell):
     print('cell%d%d: %d - %d' % (x, y, min, max))
     if max - min < 40:
         # Evenly filled cell
-        return '-'
+        return None
     thr = int((min + max)/2 + 0.2*(max - min))
     ret, thresh = cv2.threshold(cell, thr, 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
@@ -200,7 +200,7 @@ def detect_shape_contours(x, y, cell):
     nonzero = height*width - cv2.countNonZero(thresh)
     if nonzero > 2000:
         print('Fatal error: filled cell detected (thr %d nz %d)' % (thr, nonzero))
-        return None
+        raise Exception('filled cell detected (thr %d nz %d)' % (thr, nonzero))
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -220,15 +220,15 @@ def detect_shape_contours(x, y, cell):
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
     solidity = float(area)/hull_area
-    symbol = '-'
+    symbol = None
     if nonzero > 100 and solidity < 0.99:
         symbol = 'X' if solidity < 0.75 else 'O'
-    print("cell%d%d: nz %d thr %d sol %f -> %c" % (x, y, nonzero, thr, solidity, symbol))
+    print("cell%d%d: nz %d thr %d sol %f -> %s" % (x, y, nonzero, thr, solidity, symbol))
     return symbol
 
 def detect_symbols(pic, xx, yy):
     """
-    Return 9-character array with X, O or -
+    Return 9-character array with X, O or None
     """
     print("detect_symbols: %s, %s" % (xx, yy))
     grid_pic = pic[yy[0]:yy[1], xx[0]:xx[1]]
@@ -246,8 +246,6 @@ def detect_symbols(pic, xx, yy):
             x2 = int((x+1)*dx) 
             cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
             sym = detect_shape_contours(x, y, cell)
-            if not sym:
-                return None
             symbols.append(sym)
     return symbols
                 
