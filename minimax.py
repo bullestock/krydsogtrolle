@@ -25,7 +25,7 @@ class Game:
     def is_valid(self, px, py):
         if px < 0 or px > 2 or py < 0 or py > 2:
             return False
-        elif self.current_state[px][py] != '.':
+        elif self.current_state[py][px] != '.':
             return False
         else:
             return True
@@ -79,9 +79,9 @@ class Game:
         return self.current_state
 
     def make_move(self, x, y, symbol):
-        if self.current_state[x][y] != '.':
+        if self.current_state[y][x] != '.':
             raise Exception('Illegal move at (%d, %d)' % (x, y))
-        self.current_state[x][y] = symbol
+        self.current_state[y][x] = symbol
 
     def max_alpha_beta(self, alpha, beta):
         maxv = -2
@@ -104,8 +104,8 @@ class Game:
                     (m, min_i, in_j) = self.min_alpha_beta(alpha, beta)
                     if m > maxv:
                         maxv = m
-                        px = i
-                        py = j
+                        py = i
+                        px = j
                     self.current_state[i][j] = '.'
 
                     # Next two ifs in Max and Min are the only difference between regular algorithm and minimax
@@ -140,8 +140,8 @@ class Game:
                     (m, max_i, max_j) = self.max_alpha_beta(alpha, beta)
                     if m < minv:
                         minv = m
-                        qx = i
-                        qy = j
+                        qy = i
+                        qx = j
                     self.current_state[i][j] = '.'
 
                     if minv <= alpha:

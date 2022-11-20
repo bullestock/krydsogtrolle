@@ -137,12 +137,20 @@ class Grbl:
                     break
             time.sleep(0.1)
         self.pen_up(True)
-        
+
     def draw_symbol(self, x, y):
+        """
+        Draw current symbol at (x, y)
+          X  0  1  2
+        Y
+        0    .  .  .
+        1    .  .  .
+        2    .  .  .
+        """
         self.pen_up(True)
         FILL = 0.65
-        cx = self.origin_x + (x + 0.5) * self.grid_size
-        cy = self.origin_y + (y + 0.5) * self.grid_size
+        cx = self.origin_x + (2 - x + 0.5) * self.grid_size # X axis is positive left -> right
+        cy = self.origin_y + (2 - y + 0.5) * self.grid_size # Y axis is positive bottom -> top
         d = self.grid_size/2 * FILL
         if self.symbol == Symbol.CROSS:
             self.draw_line(cx - d, cy - d, cx + d, cy + d)

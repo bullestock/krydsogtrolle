@@ -144,7 +144,7 @@ def enlarge(area, amount):
     return ((max(0, area[0][0] - amount), max(0, area[0][1] - amount)),
             (max(0, area[1][0] + amount), max(0, area[1][1] + amount)))
 
-def detect_grid_position(paper, pen, active_square):
+def get_grid_pic(paper, active_square):
     get_frame() # flush old frame
     frame = get_paper_frame(paper)
     cv2.imwrite("png/frame-paper.png", frame)
@@ -172,12 +172,14 @@ def detect_grid_position(paper, pen, active_square):
     print('Grid boundary: (%d, %d) (%d, %d)' % (x1, y1, x2, y2))
     frame = frame[y1:y2, x1:x2]
     cv2.imwrite("png/frame-square.png", frame)
-    # Detect grid
+    return frame
+
+def detect_grid_position(frame):
     h, v, xx, yy, output, nolines = detect.detect_grid(frame, 3*CAM_GRID_SIZE)
     print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
     cv2.imwrite('png/out.png', output)
     cv2.imwrite('png/nolines.png', nolines)
-    return (frame, xx, yy)
+    return (xx, yy)
     
 def index_to_x(index):
     return index % 3
@@ -218,9 +220,13 @@ plotter = None
 if not args.noplotter:
     plotter = grbl.Grbl(grid_size = GRBL_GRID_SIZE)
     plotter.enable_logging()
-    plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 
-progress('Detecting paper')
+if args.skippaper:
+    progress('Loading paper position')
+else:
+    progress('Detecting paper')
+    if not args.noplotter:
+        plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
 paper = detect_paper_boundaries(args.skippaper)
 pen = compute_pen_boundaries()
 
@@ -266,10 +272,14 @@ while True:
             wait_for_human_move()
 
             # Detect position of the grid
+            progress('Taking picture of grid')
+            pic = get_grid_pic(paper, active_square)
+            if first:
+                progress('Detecting grid')
+                xx, yy = detect_grid_position(pic)
+                print("detect_grid_position: %s, %s" % (xx, yy))
             progress('Detecting symbols')
-            pic, xx, yy = detect_grid_position(paper, pen, active_square)
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
-            print("detect_grid_position: %s, %s" % (xx, yy))
             new_squares = detect.detect_symbols(pic, xx, yy)
             if not new_squares:
                 if not first:
@@ -296,6 +306,8 @@ while True:
                             new_symbol_y = y
                             new_symbol = row[x]
 
+        first = False
+
         display.show(1, '%c at %d, %d' % (new_symbol, new_symbol_x, new_symbol_y))
         if human_symbol is None:
             human_symbol = new_symbol
@@ -317,7 +329,7 @@ while True:
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
-            plotter.draw_symbol(2 - computer_move_x, 2 - computer_move_y)
+            plotter.draw_symbol(computer_move_x, computer_move_y)
         board.make_move(computer_move_x, computer_move_y, my_symbol)
 
         if board.game_over():
