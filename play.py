@@ -8,7 +8,7 @@ import subprocess
 import detect
 import display
 from getkey import getkey, keys
-from alphabeta import Tic, get_enemy, determine
+from minimax import Game
 from shapely.geometry import LineString, Point
 
 port = 0
@@ -234,8 +234,8 @@ if args.start:
     
 while True:
     # start new game
-    cur_squares = [None for i in range(9)]
-    board = Tic(cur_squares)
+    #cur_squares = [None for i in range(9)]
+    board = Game() #(cur_squares)
     human_symbol = None
     game_over = False
     active_square = get_next_square()
@@ -283,42 +283,44 @@ while True:
                 if len(new_squares) != len(cur_squares):
                     fatal_error('board size changed')
 
-                for i in range(0, len(new_squares)):
-                    if new_squares[i] != cur_squares[i]:
-                        if not new_squares[i]:
-                            fatal_error('New symbol at %d is None' % i)
-                        print('New: %c at %d' % (new_squares[i], i))
-                        if new_symbol:
-                            fatal_error('more than one new symbol')
-                        new_symbol = (i, new_squares[i])
+                for y in range(0, len(new_squares)):
+                    row = new_squares[y]
+                    for x in range(0, len(row)):
+                        if row[x] != cur_squares[y][x]:
+                            if row[x] == '.':
+                                fatal_error('New symbol at (%d, %d) is None' % (x, y))
+                            print('New: %c at (%d, %d)' % (row[x], x, y))
+                            if new_symbol:
+                                fatal_error('more than one new symbol')
+                            new_symbol_x = x
+                            new_symbol_y = y
+                            new_symbol = row[x]
 
-        new_symbol_x = index_to_x(new_symbol[0])
-        new_symbol_y = index_to_y(new_symbol[0])
-        print('New symbol: %c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
-        display.show(1, '%c at %d, %d' % (new_symbol[1], new_symbol_x, new_symbol_y))
+        display.show(1, '%c at %d, %d' % (new_symbol, new_symbol_x, new_symbol_y))
         if human_symbol is None:
-            human_symbol = new_symbol[1]
+            human_symbol = new_symbol
+            board.set_human(human_symbol)
             print('Human is playing %c' % human_symbol)
-        elif new_symbol[1] != human_symbol:
+        elif new_symbol != human_symbol:
             fatal_error('Illegal human move: %c' % new_symbol[1])
 
-        board.make_move(new_symbol[0], new_symbol[1])
-        if board.complete():
+        board.make_move(new_symbol_x, new_symbol_y, new_symbol)
+        if board.game_over():
             game_over = True
             display.show(1, '*** GAME OVER ***')
             print('Game over!')
             break
 
-        my_symbol = get_enemy(human_symbol)
+        my_symbol = board.get_enemy(human_symbol)
         print('Determining move for %c' % my_symbol)
-        computer_move = determine(board, my_symbol)
-        progress('Playing %c at %d' % (my_symbol, computer_move))
+        (m, computer_move_x, computer_move_y) = board.max_alpha_beta(-2, 2)
+        progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
-            plotter.draw_symbol(2 - index_to_x(computer_move), 2 - index_to_y(computer_move))
-        board.make_move(computer_move, my_symbol)
+            plotter.draw_symbol(2 - computer_move_x, 2 - computer_move_y)
+        board.make_move(computer_move_x, computer_move_y, my_symbol)
 
-        if board.complete():
+        if board.game_over():
             game_over = True
             display.show(1, '*** GAME OVER ***')
             print('Game over!')

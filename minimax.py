@@ -13,10 +13,12 @@ class Game:
         self.human_symbol = symbol
         self.computer_symbol = self.get_enemy(self.human_symbol)
 
-    def show(self):
+    def show(self, board = None):
+        if not board:
+            board = self.current_state
         for i in range(0, 3):
             for j in range(0, 3):
-                print('{}|'.format(self.current_state[i][j]), end=" ")
+                print('{}|'.format(board[i][j]), end=" ")
             print()
         print()
 
@@ -72,6 +74,14 @@ class Game:
         if symbol == 'O':
             return 'X'
         return None
+
+    def get_board(self):
+        return self.current_state
+
+    def make_move(self, x, y, symbol):
+        if self.current_state[x][y] != '.':
+            raise Exception('Illegal move at (%d, %d)' % (x, y))
+        self.current_state[x][y] = symbol
 
     def max_alpha_beta(self, alpha, beta):
         maxv = -2
