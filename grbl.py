@@ -148,7 +148,7 @@ class Grbl:
         2    .  .  .
         """
         self.pen_up(True)
-        FILL = 0.65
+        FILL = 0.6
         cx = self.origin_x + (2 - x + 0.5) * self.grid_size # X axis is positive left -> right
         cy = self.origin_y + (2 - y + 0.5) * self.grid_size # Y axis is positive bottom -> top
         d = self.grid_size/2 * FILL
