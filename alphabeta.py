@@ -112,6 +112,7 @@ def determine(board, player):
     a = -2
     choices = []
     if len(board.available_moves()) == 9:
+        print('blank')
         return 4
     for move in board.available_moves():
         board.make_move(move, player)
@@ -119,9 +120,12 @@ def determine(board, player):
         board.make_move(move, None)
         if val > a:
             a = val
+            print('better move %d: %f' % (move, a))
             choices = [move]
         elif val == a:
+            print('good move %d: %f' % (move, a))
             choices.append(move)
+    print('choices: %s' % choices)
     return random.choice(choices)
 
 

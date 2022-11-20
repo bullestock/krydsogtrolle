@@ -27,8 +27,6 @@ MAX_Y_SQUARE = 3
 PIXEL_ZERO = (1265, 1005)
 SQUARE_PIXELS = 300
 
-BLANK_BOARD = ['-']*9
-
 active_square_x = 0
 active_square_y = 0
 
