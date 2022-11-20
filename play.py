@@ -213,6 +213,19 @@ parser.add_argument('-p', '--skippaper',
                     action='store_true')
 args = parser.parse_args()
 
+if args.start:
+    start_args = args.start.split(',')
+    if len(start_args) != 2:
+        fatal_error('bad argument to --start: %s' % start_args)
+    active_square_x = int(start_args[0])
+    active_square_y = int(start_args[1])
+    if (active_square_x < 0 or
+        active_square_x > 3 or
+        active_square_y < 0 or
+        active_square_y > 2):
+        fatal_error('bad coords in --start: %s' % start_args)
+    print('Starting at (%d, %d)' % (active_square_x, active_square_y))
+    
 if not os.path.exists('png'):
     os.makedirs('png')
 
@@ -230,14 +243,6 @@ else:
 paper = detect_paper_boundaries(args.skippaper)
 pen = compute_pen_boundaries()
 
-if args.start:
-    start_args = args.start.split(',')
-    if len(start_args) != 2:
-        fatal_error('bad argument to --start: %s' % start_args)
-    active_square_x = int(start_args[0])
-    active_square_y = int(start_args[1])
-    print('Starting at (%d, %d)' % (active_square_x, active_square_y))
-    
 while True:
     # start new game
     #cur_squares = [None for i in range(9)]
