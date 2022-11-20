@@ -226,7 +226,7 @@ def detect_shape_contours(x, y, cell):
     print("cell%d%d: nz %d thr %d sol %f -> %s" % (x, y, nonzero, thr, solidity, symbol))
     return symbol
 
-def detect_symbols(pic, xx, yy):
+def detect_symbols(pic, xx, yy, board):
     """
     Return 3 x 3 array with X, O or None
     """
@@ -241,12 +241,16 @@ def detect_symbols(pic, xx, yy):
     for y in range(0, 3):
         row = []
         for x in range(0, 3):
-            y1 = int(y*dy)
-            y2 = int((y+1)*dy)
-            x1 = int(x*dx)
-            x2 = int((x+1)*dx) 
-            cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-            sym = detect_shape_contours(x, y, cell)
+            sym = board[y][x]
+            if sym == '.':
+                y1 = int(y*dy)
+                y2 = int((y+1)*dy)
+                x1 = int(x*dx)
+                x2 = int((x+1)*dx) 
+                cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
+                sym = detect_shape_contours(x, y, cell)
+            else:
+                print('Skip (%d, %d): %c' % (x, y, sym))
             row.append(sym)
         symbols.append(row)
     return symbols

@@ -280,7 +280,7 @@ while True:
                 print("detect_grid_position: %s, %s" % (xx, yy))
             progress('Detecting symbols')
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
-            new_squares = detect.detect_symbols(pic, xx, yy)
+            new_squares = detect.detect_symbols(pic, xx, yy, cur_squares)
             if not new_squares:
                 if not first:
                     fatal_error('no symbols found')
