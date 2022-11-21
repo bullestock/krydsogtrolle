@@ -123,7 +123,7 @@ class Grbl:
         # G2 X8.0000Y10.0000 i2.0000j0 z-0.0625
         if not speed:
             speed = self.draw_speed
-        self.write(b"G0X%dY%d\n" % (-(x-radius), y))
+        self.write(b"G0X%dY%d\n" % (-(x-2*radius), y))
         self.pen_up(False)
         self.write(b"G1F%d\n" % speed)
         self.write(b"G2X%dY%dI%dJ0\n" % (-(x-radius), y, radius))
@@ -166,6 +166,8 @@ if __name__ == "__main__":
                         help='Go to maximum X/Y', action='store_true')
     parser.add_argument('--dot',
                         help='Make a dot at the specified position')
+    parser.add_argument('--speedtest',
+                        help='Run speed test', action='store_true')
     args = parser.parse_args()
     l = Grbl(home = True)
     if args.goto_max:
@@ -178,6 +180,14 @@ if __name__ == "__main__":
         l.goto(int(dot_args[0]), int(dot_args[1]))
         l.pen_up(False)
         l.pen_up(True)
+        exit()
+    if args.speedtest:
+        # 14000 is max
+        for speed in range(12000, 25000, 1000):
+            print('speed %d' % speed)
+            l.goto(0, 0, speed)
+            l.goto(200, 200, speed)
+            time.sleep(1)
         exit()
     if False:
         # Basic motion
