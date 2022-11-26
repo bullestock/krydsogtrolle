@@ -19,7 +19,7 @@ class Grbl:
         self.origin_y = 0
         self.pen_up_position = 650
         self.pen_down_position = 965
-        self.max_speed = 15000
+        self.max_speed = 30000
         self.draw_speed = 3000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
@@ -61,13 +61,15 @@ class Grbl:
 
     def wait_for_ok(self):
         while True:
-            reply = self.ser.readline().strip()
+            reply = self.ser.readline()
+            if self.logfile:
+                self.logfile.write(reply.decode('ascii'))
+            reply = reply.strip()
             if reply == b'ok':
-                #print("OK")
                 break
             time.sleep(0.5)
 
-    def goto(self, x, y, speed=10000):
+    def goto(self, x, y, speed=20000):
         #print("Go to %d, %d" % (x, y))
         self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
         self.wait_for_ok()
@@ -86,6 +88,14 @@ class Grbl:
         self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
         time.sleep(0.2)
+
+    def set_accel(self, accel):
+        self.write(b"$120=%d\n" % accel)
+        self.wait_for_ok()
+        time.sleep(1)
+        self.write(b"$121=%d\n" % accel)
+        self.wait_for_ok()
+        time.sleep(1)
 
     def draw_line(self, x1, y1, x2, y2, speed=None):
         move_speed = self.max_speed
@@ -170,6 +180,7 @@ if __name__ == "__main__":
                         help='Run speed test', action='store_true')
     args = parser.parse_args()
     l = Grbl(home = True)
+    l.enable_logging()
     if args.goto_max:
         l.goto(Grbl.MAX_X, Grbl.MAX_Y)
         exit()
@@ -182,10 +193,13 @@ if __name__ == "__main__":
         l.pen_up(True)
         exit()
     if args.speedtest:
-        # 14000 is max
-        for speed in range(12000, 25000, 1000):
-            print('speed %d' % speed)
+        accel = 5000
+        l.set_accel(accel)
+        for speed in range(20000, 31000, 1000):
+            print('speed %d accel %d' % (speed, accel))
             l.goto(0, 0, speed)
+            l.goto(100, 200, speed)
+            l.goto(200, 100, speed)
             l.goto(200, 200, speed)
             time.sleep(1)
         exit()
