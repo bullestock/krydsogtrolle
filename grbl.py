@@ -19,8 +19,8 @@ class Grbl:
         self.origin_y = 0
         self.pen_up_position = 650
         self.pen_down_position = 965
-        self.max_speed = 30000
-        self.draw_speed = 3000
+        self.max_speed = 20000
+        self.draw_speed = 8000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
         print("Opening serial port")
@@ -107,25 +107,35 @@ class Grbl:
         self.pen_up(False)
         self.goto(x2, y2, speed=draw_speed)
 
-    def draw_grid(self, speed=10000):
+    def draw_grid(self):
         self.draw_line(self.origin_x + 1*self.grid_size, self.origin_y,
-                       self.origin_x + 1*self.grid_size, self.origin_y + 3*self.grid_size,
-                       speed=speed)
+                       self.origin_x + 1*self.grid_size, self.origin_y + 3*self.grid_size)
         self.pen_up(True)
         self.draw_line(self.origin_x + 2*self.grid_size, self.origin_y + 3*self.grid_size,
-                       self.origin_x + 2*self.grid_size, self.origin_y,
-                       speed=speed)
+                       self.origin_x + 2*self.grid_size, self.origin_y)
         self.pen_up(True)
         self.draw_line(self.origin_x + 3*self.grid_size, self.origin_y + 1*self.grid_size,
-                       self.origin_x, self.origin_y + 1*self.grid_size,
-                       speed=speed)
+                       self.origin_x, self.origin_y + 1*self.grid_size)
         self.pen_up(True)
         self.draw_line(self.origin_x, self.origin_y + 2*self.grid_size,
-                       self.origin_x + 3*self.grid_size, self.origin_y + 2*self.grid_size,
-                       speed=speed)
+                       self.origin_x + 3*self.grid_size, self.origin_y + 2*self.grid_size)
         self.pen_up(True)
         self.goto(self.origin_x + 3*self.grid_size, self.origin_y + 3*self.grid_size, speed=self.max_speed)
 
+    def present(self):
+        print('origin %d, %d' % (self.origin_x, self.origin_y))
+        x = self.origin_x + 5*self.grid_size
+        print('x %d' % x)
+        if x > self.MAX_X:
+            x = self.MAX_X - 1
+        print('x %d' % x)
+        y = self.origin_y + 5*self.grid_size
+        print('y %d' % y)
+        if y > self.MAX_Y:
+            y = self.MAX_Y - 1
+        print('y %d' % y)
+        self.goto(x, y)
+        
     def draw_circle(self, x, y, radius, speed=None):
         # G0 X8.0000Y10.0000
         # G1 Z-0.0625F5.00

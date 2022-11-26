@@ -137,11 +137,6 @@ def get_next_square():
             active_square_y = None
     return sq
 
-# Proudly present our work
-def present(plotter, active_square_origin):
-    # TODO
-    plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
-
 # Enlarge an area by the specified amount on each side
 def enlarge(area, amount):
     return ((max(0, area[0][0] - amount), max(0, area[0][1] - amount)),
@@ -270,7 +265,7 @@ while True:
         progress('Drawing grid')
         plotter.draw_grid()
         # Make room for human
-        present(plotter, active_square_origin)
+        plotter.present()
 
     # start game loop
     first = True
@@ -351,4 +346,4 @@ while True:
             break
 
         # Make room for human
-        present(plotter, active_square_origin)
+        plotter.present()
