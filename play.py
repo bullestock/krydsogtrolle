@@ -1,3 +1,4 @@
+# Standard modules
 import argparse
 import cv2
 import grbl
@@ -5,11 +6,13 @@ import json
 import numpy
 import os
 import subprocess
+import time
+from shapely.geometry import LineString, Point
+# Local modules
 import detect
 import display
 from getkey import getkey, keys
 from minimax import Game
-from shapely.geometry import LineString, Point
 
 port = 0
 cam = cv2.VideoCapture(port)
@@ -56,10 +59,10 @@ def get_paper_frame(paper):
     return frame
     
 # Return paper boundaries in camera coordinates
-def detect_paper_boundaries(skip_paper_detection):
+def detect_paper_boundaries(do_paper_detection):
     frame = get_frame()
     cv2.imwrite('png/paper.png', frame)
-    if skip_paper_detection:
+    if not do_paper_detection:
         with open('paper.json', 'r') as f:
             saved = json.load(f)
             xmin = saved['xmin']
@@ -152,8 +155,6 @@ def get_grid_pic(paper, active_square):
     paper_width = paper[1][0] - paper[0][0]
     paper_height = paper[1][1] - paper[0][1]
     print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
-    aspect_ratio = paper_width/paper_height
-    assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
     square_w = SQUARE_PIXELS
     x2 = int(PIXEL_ZERO[0] - active_square[0]*square_w)
     x1 = int(x2 - square_w)
@@ -208,8 +209,8 @@ parser.add_argument('-n', '--noplotter',
                     help='Do not connect to plotter', action='store_true')
 parser.add_argument('-s', '--start',
                     help='Start square (default is (0, 0))')
-parser.add_argument('-p', '--skippaper',
-                    help='Do not detect paper boundaries (reuse previous)',
+parser.add_argument('-p', '--detectpaper',
+                    help='Detect paper boundaries (default: reuse previous)',
                     action='store_true')
 args = parser.parse_args()
 
@@ -234,13 +235,19 @@ if not args.noplotter:
     plotter = grbl.Grbl(grid_size = GRBL_GRID_SIZE)
     plotter.enable_logging()
 
-if args.skippaper:
-    progress('Loading paper position')
-else:
+if args.detectpaper:
     progress('Detecting paper')
     if not args.noplotter:
         plotter.goto(grbl.Grbl.MAX_X, grbl.Grbl.MAX_Y)
-paper = detect_paper_boundaries(args.skippaper)
+        time.sleep(1)
+
+paper = detect_paper_boundaries(args.detectpaper)
+paper_width = paper[1][0] - paper[0][0]
+paper_height = paper[1][1] - paper[0][1]
+print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
+aspect_ratio = paper_width/paper_height
+assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
+
 pen = compute_pen_boundaries()
 
 while True:
