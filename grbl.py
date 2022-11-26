@@ -1,5 +1,6 @@
 import argparse
 import serial
+import math
 import time
 from enum import Enum
 
@@ -137,25 +138,17 @@ class Grbl:
         self.goto(x, y)
         
     def draw_circle(self, x, y, radius, speed=None):
-        # G0 X8.0000Y10.0000
-        # G1 Z-0.0625F5.00
-        # F5.00
-        # G2 X8.0000Y10.0000 i2.0000j0 z-0.0625
         if not speed:
             speed = self.draw_speed
-        self.write(b"G0X%dY%d\n" % (-(x-2*radius), y))
+        self.write(b"G0X%dY%d\n" % (-(x-radius), y))
         self.pen_up(False)
-        self.write(b"G1F%d\n" % speed)
-        self.write(b"G2X%dY%dI%dJ0\n" % (-(x-radius), y, radius))
-        self.wait_for_ok()
-        while True:
-            self.write(b"?")
-            reply = self.ser.readline().strip()
-            if len(reply) > 0:
-                parts = reply.split(b"|")
-                if parts[0] == b'<Idle':
-                    break
-            time.sleep(0.1)
+        STEPS = 16
+        for i in range(0, STEPS+1):
+            angle = i*2*math.pi/STEPS
+            cx = x + math.cos(angle)*radius
+            cy = y + math.sin(angle)*radius
+            self.write(b"G1X%dY%dF%d\n" % (-cx, cy, speed))
+            self.wait_for_ok()
         self.pen_up(True)
 
     def draw_symbol(self, x, y):
@@ -186,6 +179,8 @@ if __name__ == "__main__":
                         help='Go to maximum X/Y', action='store_true')
     parser.add_argument('--dot',
                         help='Make a dot at the specified position')
+    parser.add_argument('--circle',
+                        help='Draw a circle at the specified position')
     parser.add_argument('--speedtest',
                         help='Run speed test', action='store_true')
     args = parser.parse_args()
@@ -201,6 +196,12 @@ if __name__ == "__main__":
         l.goto(int(dot_args[0]), int(dot_args[1]))
         l.pen_up(False)
         l.pen_up(True)
+        exit()
+    if args.circle:
+        circle_args = args.circle.split(',')
+        if len(circle_args) != 2:
+            fatal_error('bad argument to --circle: %s' % circle_args)
+        l.draw_circle(int(circle_args[0]), int(circle_args[1]), 10)
         exit()
     if args.speedtest:
         accel = 5000
