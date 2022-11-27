@@ -20,7 +20,7 @@ class Grbl:
         self.origin_y = 0
         self.pen_up_position = 650
         self.pen_down_position = 965
-        self.max_speed = 20000
+        self.max_speed = 15000
         self.draw_speed = 8000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
@@ -70,10 +70,7 @@ class Grbl:
                 break
             time.sleep(0.5)
 
-    def goto(self, x, y, speed=20000):
-        #print("Go to %d, %d" % (x, y))
-        self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
-        self.wait_for_ok()
+    def wait_for_idle(self):
         while True:
             self.ser.write(b"?")
             reply = self.ser.readline().strip()
@@ -82,6 +79,14 @@ class Grbl:
                 if parts[0] == b'<Idle':
                     break
             time.sleep(0.1)
+
+    def goto(self, x, y, speed=20000):
+        #print("Go to %d, %d" % (x, y))
+        if speed > self.max_speed:
+            speed = self.max_speed
+        self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
+        self.wait_for_ok()
+        self.wait_for_idle()
 
     def pen_up(self, up):
         #print("Pen %s" % ('up' if up else 'down'))
@@ -149,6 +154,7 @@ class Grbl:
             cy = y + math.sin(angle)*radius
             self.write(b"G1X%dY%dF%d\n" % (-cx, cy, speed))
             self.wait_for_ok()
+        self.wait_for_idle()
         self.pen_up(True)
 
     def draw_symbol(self, x, y):
@@ -172,6 +178,9 @@ class Grbl:
         else:
             self.draw_circle(cx, cy, d)
         self.pen_up(True)
+
+    def show_winner(self, type, n):
+        print('show_winner(%s, %d)' % (type, n))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Control plotter.')

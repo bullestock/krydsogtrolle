@@ -30,33 +30,35 @@ class Game:
         else:
             return True
 
-    # Checks if the game has ended and returns the winner in each case
+    # Checks if the game has ended.
+    # If yes, returns (winner, type, number)
+    # Else returns None
     def game_over(self):
         # Vertical win
         for i in range(0, 3):
             if (self.current_state[0][i] != '.' and
                 self.current_state[0][i] == self.current_state[1][i] and
                 self.current_state[1][i] == self.current_state[2][i]):
-                return self.current_state[0][i]
+                return (self.current_state[0][i], 'V', i)
 
         # Horizontal win
         for i in range(0, 3):
             if (self.current_state[i] == ['X', 'X', 'X']):
-                return 'X'
+                return ('X', 'H', i)
             elif (self.current_state[i] == ['O', 'O', 'O']):
-                return 'O'
+                return ('O', 'H', i)
 
         # Main diagonal win
         if (self.current_state[0][0] != '.' and
             self.current_state[0][0] == self.current_state[1][1] and
             self.current_state[0][0] == self.current_state[2][2]):
-            return self.current_state[0][0]
+            return (self.current_state[0][0], 'D', 0)
 
         # Second diagonal win
         if (self.current_state[0][2] != '.' and
             self.current_state[0][2] == self.current_state[1][1] and
             self.current_state[0][2] == self.current_state[2][0]):
-            return self.current_state[0][2]
+            return (self.current_state[0][2], 'D', 1)
 
         # Is whole board full?
         for i in range(0, 3):
@@ -66,7 +68,7 @@ class Game:
                     return None
 
         # It's a tie!
-        return '.'
+        return ('.', None, None)
 
     def get_enemy(self, symbol):
         if symbol == 'X':
@@ -90,12 +92,13 @@ class Game:
 
         result = self.game_over()
 
-        if result == self.human_symbol:
-            return (-1, 0, 0)
-        elif result == self.computer_symbol:
-            return (1, 0, 0)
-        elif result == '.':
-            return (0, 0, 0)
+        if result:
+            if result[0] == self.human_symbol:
+                return (-1, 0, 0)
+            elif result[0] == self.computer_symbol:
+                return (1, 0, 0)
+            elif result[0] == '.':
+                return (0, 0, 0)
 
         for i in range(0, 3):
             for j in range(0, 3):
@@ -126,12 +129,13 @@ class Game:
 
         result = self.game_over()
 
-        if result == self.human_symbol:
-            return (-1, 0, 0)
-        elif result == self.computer_symbol:
-            return (1, 0, 0)
-        elif result == '.':
-            return (0, 0, 0)
+        if result:
+            if result[0] == self.human_symbol:
+                return (-1, 0, 0)
+            elif result[0] == self.computer_symbol:
+                return (1, 0, 0)
+            elif result[0] == '.':
+                return (0, 0, 0)
 
         for i in range(0, 3):
             for j in range(0, 3):

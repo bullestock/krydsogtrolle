@@ -324,10 +324,13 @@ while True:
             fatal_error('Illegal human move: %c' % new_symbol[1])
 
         board.make_move(new_symbol_x, new_symbol_y, new_symbol)
-        if board.game_over():
+        go = board.game_over()
+        if go:
             game_over = True
             display.show(1, '*** GAME OVER ***')
             print('Game over!')
+            if plotter and go[0] != '.':
+                plotter.show_winner(go[1], go[2])
             break
 
         my_symbol = board.get_enemy(human_symbol)
