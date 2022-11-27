@@ -236,7 +236,7 @@ def detect_symbols(pic, xx, yy, board):
 
     dx = (xx[1] - xx[0])/3
     dy = (yy[1] - yy[0])/3
-    MARGIN=7
+    MARGIN=10
     symbols = []
     for y in range(0, 3):
         row = []
