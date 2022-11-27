@@ -21,7 +21,7 @@ class Grbl:
         self.pen_up_position = 650
         self.pen_down_position = 965
         self.max_speed = 15000
-        self.draw_speed = 8000
+        self.draw_speed = 12000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
         print("Opening serial port")
@@ -144,10 +144,10 @@ class Grbl:
         
     def draw_circle(self, x, y, radius, speed=None):
         if not speed:
-            speed = self.draw_speed
+            speed = self.draw_speed/4
         self.write(b"G0X%dY%d\n" % (-(x-radius), y))
         self.pen_up(False)
-        STEPS = 16
+        STEPS = 32
         for i in range(0, STEPS+1):
             angle = i*2*math.pi/STEPS
             cx = x + math.cos(angle)*radius
