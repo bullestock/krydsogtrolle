@@ -6,7 +6,7 @@ height = 5
 depth = 7
 d1 = 4.8
 d2 = 3.25
-d3 = 3.8
+d3 = 3.25
 
 def slot(o, offset, dia):
     return (o
