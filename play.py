@@ -247,8 +247,7 @@ pen = compute_pen_boundaries()
 
 while True:
     # start new game
-    #cur_squares = [None for i in range(9)]
-    board = Game() #(cur_squares)
+    board = Game()
     human_symbol = None
     game_over = False
     active_square = get_next_square()
@@ -335,12 +334,12 @@ while True:
 
         my_symbol = board.get_enemy(human_symbol)
         print('Determining move for %c' % my_symbol)
-        (m, computer_move_x, computer_move_y) = board.max_alpha_beta(-2, 2)
+        (m, computer_move_x, computer_move_y) = board.get_computer_move()
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
             plotter.draw_symbol(computer_move_x, computer_move_y)
-        board.make_move(computer_move_x, computer_move_y, my_symbol)
+        board.make_computer_move(computer_move_x, computer_move_y)
 
         if board.game_over():
             game_over = True
