@@ -40,41 +40,74 @@ class Game:
             return True
         return False
 
+    def is_occupied(self, x, y):
+        return self.current_state[x][y] != '.' and self.current_state[x][y] != ' '
+
     # Checks if the game has ended.
     # If yes, returns (winner, type, number)
     # Else returns None
     def game_over(self):
         # Vertical win
-        for i in range(0, 3):
-            if (self.current_state[0+1][i+1] != '.' and
-                self.current_state[0+1][i+1] == self.current_state[1+1][i+1] and
-                self.current_state[1+1][i+1] == self.current_state[2+1][i+1]):
-                return (self.current_state[0+1][i+1], 'V', i)
+        for i in range(0, 5):
+            for j in range(0, 3):
+                if (self.is_occupied(j, i) and
+                    self.current_state[j][i] == self.current_state[j+1][i] and
+                    self.current_state[j][i] == self.current_state[j+2][i]):
+                    return (self.current_state[j][i], 'V', i)
 
         # Horizontal win
-        for i in range(0, 3):
-            if (self.current_state[i+1][1:4] == ['X', 'X', 'X']):
-                return ('X', 'H', i)
-            elif (self.current_state[i+1][1:4] == ['O', 'O', 'O']):
-                return ('O', 'H', i)
+        for i in range(0, 5):
+            for j in range(0, 3):
+                if (self.current_state[i][j:j+3] == ['X', 'X', 'X']):
+                    return ('X', 'H', i)
+                elif (self.current_state[i][j:j+3] == ['O', 'O', 'O']):
+                    return ('O', 'H', i)
 
-        # Main diagonal win
-        if (self.current_state[0+1][0+1] != '.' and
-            self.current_state[0+1][0+1] == self.current_state[1+1][1+1] and
-            self.current_state[0+1][0+1] == self.current_state[2+1][2+1]):
-            return (self.current_state[0+1][0+1], 'D', 0)
+        # Main diagonal wins
+        # Left
+        for j in range(0, 2):
+            if (self.is_occupied(j+1, j) and
+                self.current_state[j+1][j] == self.current_state[j+2][j+1] and
+                self.current_state[j+1][j] == self.current_state[j+3][j+2]):
+                return (self.current_state[j+1][j], 'D', 1)
+        # Center
+        for j in range(0, 3):
+            if (self.is_occupied(0+j, 0+j) and
+                self.current_state[0+j][0+j] == self.current_state[1+j][1+j] and
+                self.current_state[0+j][0+j] == self.current_state[2+j][2+j]):
+                return (self.current_state[0+j][0+j], 'D', 0)
+        # Right
+        for j in range(0, 2):
+            if (self.is_occupied(j, j+1) and
+                self.current_state[j][j+1] == self.current_state[j+1][j+2] and
+                self.current_state[j][j+1] == self.current_state[j+2][j+3]):
+                return (self.current_state[j][j+1], 'D', 1)
 
-        # Second diagonal win
-        if (self.current_state[0+1][2+1] != '.' and
-            self.current_state[0+1][2+1] == self.current_state[1+1][1+1] and
-            self.current_state[0+1][2+1] == self.current_state[2+1][0+1]):
-            return (self.current_state[0+1][2+1], 'D', 1)
+        # Second diagonal wins
+        # Left
+        for j in range(0, 2):
+            if (self.is_occupied(j, 3-j) and
+                self.current_state[j][3-j] == self.current_state[j+1][2-j] and
+                self.current_state[j][3-j] == self.current_state[j+2][1-j]):
+                return (self.current_state[j][3-j], 'D', 1)
+        # Center
+        for j in range(0, 3):
+            if (self.is_occupied(j, 4-j) and
+                self.current_state[j][4-j] == self.current_state[j+1][3-j] and
+                self.current_state[j][4-j] == self.current_state[j+2][2-j]):
+                return (self.current_state[j][4-j], 'D', 1)
+        # Right
+        for j in range(0, 2):
+            if (self.is_occupied(j+1, 4-j) and
+                self.current_state[j+1][4-j] == self.current_state[j+2][3-j] and
+                self.current_state[j+1][4-j] == self.current_state[j+3][2-j]):
+                return (self.current_state[j+1][4-j], 'D', 1)
 
         # Is whole board full?
         for i in range(0, 3):
             for j in range(0, 3):
                 # There's an empty field, we continue the game
-                if (self.current_state[i+1][j+1] == '.'):
+                if self.is_occupied(i+1, j+1):
                     return None
 
         # It's a tie!
@@ -99,13 +132,19 @@ class Game:
         return self.current_state
 
     def make_move(self, x, y, symbol, force=False):
+        if x is None or y is None:
+            self.show()
+            raise Exception('Illegal move: x %s y %s' % (str(x), str(y)))
         if force:
-            if self.current_state[y+1][x+1] != '.' and self.current_state[y+1][x+1] != ' ':
+            if self.is_occupied(y+1, x+1):
                 raise Exception('Illegal move at (%d, %d)' % (x, y))
         elif self.current_state[y+1][x+1] != '.':
             raise Exception('Illegal move at (%d, %d)' % (x, y))
         self.current_state[y+1][x+1] = symbol
 
+    def erase_move(self, x, y):
+        self.current_state[y+1][x+1] = '.'
+        
     def make_human_move(self, x, y):
         self.make_move(x, y, self.human_symbol)
 
@@ -192,12 +231,15 @@ class Game:
         temp = Game()
         temp.copy(self)
         temp.make_computer_move(move[1], move[2])
+        print('after computer move:')
+        temp.show()
         # Can the human win in next move?
         (m, hx, hy) = temp.get_human_move()
         if temp.is_valid(hx, hy):
             temp.make_human_move(hx, hy)
             if temp.game_over() or self.last_round():
                 # panic!
+                temp.erase_move(hx, hy) # undo
                 cheat = temp.get_cheating_move()
                 print('cheating:')
                 print(cheat)
@@ -215,9 +257,13 @@ class Game:
         for x in range(-1, 4):
             temp = Game()
             temp.copy(self)
+            print('before:')
+            temp.show()
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
                 if temp.game_over():
+                    print('winning cheat:')
+                    temp.show()
                     return (10, x, y)
         # Scan lower border
         y = 3
@@ -227,7 +273,7 @@ class Game:
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
                 if temp.game_over():
-                    return (10, x, y)
+                    return (9, x, y)
         # Scan left border
         x = -1
         for y in range(0, 3):
@@ -236,7 +282,7 @@ class Game:
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
                 if temp.game_over():
-                    return (10, x, y)
+                    return (8, x, y)
         # Scan left border
         x = 3
         for y in range(0, 3):
@@ -245,7 +291,7 @@ class Game:
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
                 if temp.game_over():
-                    return (10, x, y)
+                    return (7, x, y)
         return None
 
 def main2():
@@ -306,7 +352,9 @@ class TestGameMethods(unittest.TestCase):
             g.set_human('O')
             for y in range(0, 3):
                 g.make_human_move(x, y)
-            self.assertEqual(g.game_over()[0], 'O')
+            go = g.game_over()
+            self.assertFalse(go is None)
+            self.assertEqual(go[0], 'O')
         # Horizontal
         for y in range(0, 3):
             g = Game()
@@ -321,12 +369,133 @@ class TestGameMethods(unittest.TestCase):
             g.make_human_move(x, x)
         self.assertEqual(g.game_over()[0], 'O')
 
+    def test_game_over_cheat(self):
+        # Vertical
+        for i in range(-1, 2):
+            for x in range(0, 3):
+                g = Game()
+                g.set_human('X')
+                for y in range(0, 3):
+                    g.make_computer_move(i + x, y, force=True)
+                self.assertEqual(g.game_over()[0], 'O')
+        # Horizontal
+        for i in range(-1, 2):
+            for y in range(0, 3):
+                g = Game()
+                g.set_human('X')
+                for x in range(0, 3):
+                    g.make_computer_move(i + x, y, force=True)
+                go = g.game_over()
+                print(go)
+                self.assertEqual(go[0], 'O')
+        # Diagonals \
+        # Left 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(-1, 0, force=True)
+        g.make_computer_move(0, 1, force=True)
+        g.make_computer_move(1, 2, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Left 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, 1, force=True)
+        g.make_computer_move(1, 2, force=True)
+        g.make_computer_move(2, 3, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(-1, -1, force=True)
+        g.make_computer_move(0, 0, force=True)
+        g.make_computer_move(1, 1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, 0, force=True)
+        g.make_computer_move(1, 1, force=True)
+        g.make_computer_move(2, 2, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 3
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(1, 1, force=True)
+        g.make_computer_move(2, 2, force=True)
+        g.make_computer_move(3, 3, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Right 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, -1, force=True)
+        g.make_computer_move(1, 0, force=True)
+        g.make_computer_move(2, 1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Right 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(1, 0, force=True)
+        g.make_computer_move(2, 1, force=True)
+        g.make_computer_move(3, 2, force=True)
+        g.show()
+        self.assertEqual(g.game_over()[0], 'O')
+        # Diagonals /
+        # Left 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, 1, force=True)
+        g.make_computer_move(1, 0, force=True)
+        g.make_computer_move(2, -1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Left 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(-1, 2, force=True)
+        g.make_computer_move(0, 1, force=True)
+        g.make_computer_move(1, 0, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(-1, 3, force=True)
+        g.make_computer_move(0, 2, force=True)
+        g.make_computer_move(1, 1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, 2, force=True)
+        g.make_computer_move(1, 1, force=True)
+        g.make_computer_move(2, 0, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Center 3
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(1, 1, force=True)
+        g.make_computer_move(2, 0, force=True)
+        g.make_computer_move(3, -1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Right 1
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(0, 3, force=True)
+        g.make_computer_move(1, 2, force=True)
+        g.make_computer_move(2, 1, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+        # Right 2
+        g = Game()
+        g.set_human('X')
+        g.make_computer_move(1, 2, force=True)
+        g.make_computer_move(2, 1, force=True)
+        g.make_computer_move(3, 0, force=True)
+        self.assertEqual(g.game_over()[0], 'O')
+
     def test_find_cheat_move(self):
         print('cheat---')
         g = Game()
         g.set_human('O')
 
-        for i in range(0, 4):
+        for i in range(0, 3):
             (m, px, py) = g.get_human_move()
             g.make_human_move(px, py)
             print('%d human' % i)
@@ -336,8 +505,15 @@ class TestGameMethods(unittest.TestCase):
             print('%d computer' % i)
             g.show()
 
-        #self.assertEqual(px, 1)
-        #self.assertEqual(py, 3)
+        (m, px, py) = g.get_human_move()
+        g.make_human_move(px, py)
+        print('3 human')
+        g.show()
+        (m, px, py) = g.get_computer_move()
+        g.make_computer_move(px, py, force=True)
+        g.show()
+        self.assertEqual(px, 1)
+        self.assertEqual(py, 3)
         
 if __name__ == "__main__":
     unittest.main()
