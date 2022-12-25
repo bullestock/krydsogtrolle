@@ -231,8 +231,6 @@ class Game:
         temp = Game()
         temp.copy(self)
         temp.make_computer_move(move[1], move[2])
-        print('after computer move:')
-        temp.show()
         # Can the human win in next move?
         (m, hx, hy) = temp.get_human_move()
         if temp.is_valid(hx, hy):
@@ -241,8 +239,6 @@ class Game:
                 # panic!
                 temp.erase_move(hx, hy) # undo
                 cheat = temp.get_cheating_move()
-                print('cheating:')
-                print(cheat)
                 if cheat:
                     return cheat
         # No, just do our best for now 
@@ -257,13 +253,9 @@ class Game:
         for x in range(-1, 4):
             temp = Game()
             temp.copy(self)
-            print('before:')
-            temp.show()
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
                 if temp.game_over():
-                    print('winning cheat:')
-                    temp.show()
                     return (10, x, y)
         # Scan lower border
         y = 3
@@ -386,7 +378,6 @@ class TestGameMethods(unittest.TestCase):
                 for x in range(0, 3):
                     g.make_computer_move(i + x, y, force=True)
                 go = g.game_over()
-                print(go)
                 self.assertEqual(go[0], 'O')
         # Diagonals \
         # Left 1
@@ -437,7 +428,6 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(1, 0, force=True)
         g.make_computer_move(2, 1, force=True)
         g.make_computer_move(3, 2, force=True)
-        g.show()
         self.assertEqual(g.game_over()[0], 'O')
         # Diagonals /
         # Left 1
@@ -491,29 +481,21 @@ class TestGameMethods(unittest.TestCase):
         self.assertEqual(g.game_over()[0], 'O')
 
     def test_find_cheat_move(self):
-        print('cheat---')
         g = Game()
         g.set_human('O')
 
         for i in range(0, 3):
             (m, px, py) = g.get_human_move()
             g.make_human_move(px, py)
-            print('%d human' % i)
-            g.show()
             (m, px, py) = g.get_computer_move()
             g.make_computer_move(px, py, force=True)
-            print('%d computer' % i)
-            g.show()
 
         (m, px, py) = g.get_human_move()
         g.make_human_move(px, py)
-        print('3 human')
-        g.show()
         (m, px, py) = g.get_computer_move()
         g.make_computer_move(px, py, force=True)
-        g.show()
-        self.assertEqual(px, 1)
-        self.assertEqual(py, 3)
+        self.assertEqual(px, 3)
+        self.assertEqual(py, -1)
         
 if __name__ == "__main__":
     unittest.main()
