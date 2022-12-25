@@ -186,8 +186,8 @@ def detect_grid(input, min_length):
 
 def detect_shape_contours(x, y, cell):
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
-    min = numpy.amin(cell)
-    max = numpy.amax(cell)
+    min = int(numpy.amin(cell))
+    max = int(numpy.amax(cell))
     print('cell%d%d: %d - %d' % (x, y, min, max))
     if max - min < 50:
         # Evenly filled cell
