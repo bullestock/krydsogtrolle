@@ -107,7 +107,7 @@ class Game:
         for i in range(0, 3):
             for j in range(0, 3):
                 # There's an empty field, we continue the game
-                if self.is_occupied(i+1, j+1):
+                if not self.is_occupied(i+1, j+1):
                     return None
 
         # It's a tie!
@@ -517,4 +517,3 @@ class TestGameMethods(unittest.TestCase):
         
 if __name__ == "__main__":
     unittest.main()
-    
