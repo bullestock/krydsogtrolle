@@ -26,9 +26,6 @@ CAM_GRID_SIZE = 60
 SQUARE_SIZE = 5*GRBL_GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
-# Pixel offset of GRBL zero
-PIXEL_ZERO = (1265, 1005)
-SQUARE_PIXELS = 300
 
 active_square_x = 0
 active_square_y = 0
@@ -69,8 +66,6 @@ def detect_paper_boundaries(do_paper_detection):
             xmax = saved['xmax']
             ymin = saved['ymin']
             ymax = saved['ymax']
-            hd = saved['height']
-            wd = saved['width']
     else:
         out = subprocess.run(["./a4detect", 'png/paper.png'], capture_output=True)
         assert out.returncode == 0, 'a4detect failed'
@@ -101,11 +96,8 @@ def detect_paper_boundaries(do_paper_detection):
                 ymax = max(ymax, c[1])
             else:
                 ymin = min(ymin, c[1])
-        wd = int((xmax - xmin)/4)
-        hd = int((ymax - ymin)/4)
         saved = { 'xmin': xmin, 'xmax': xmax,
-                  'ymin': ymin, 'ymax': ymax,
-                  'height': hd, 'width': wd }
+                  'ymin': ymin, 'ymax': ymax }
         with open("paper.json", "w") as f:
             json.dump(saved, f)
     boundaries = ((xmin, ymin), (xmax, ymax))
@@ -146,28 +138,6 @@ def get_grid_pic(paper, active_square):
     get_frame() # flush old frame
     frame = get_paper_frame(paper)
     cv2.imwrite("png/frame-paper.png", frame)
-    # Cut out active square
-    paper_width = paper[1][0] - paper[0][0]
-    paper_height = paper[1][1] - paper[0][1]
-    print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
-    square_w = SQUARE_PIXELS
-    x2 = int(PIXEL_ZERO[0] - active_square[0]*square_w)
-    x1 = int(x2 - square_w)
-    EXTRA = 0#0.2
-    if x2 < paper_width - square_w//2:
-        x2 = int(x2 + EXTRA*square_w)
-    if x1 > square_w//2:
-        x1 = int(x1 - EXTRA*square_w)
-    square_h = SQUARE_PIXELS
-    y2 = int(PIXEL_ZERO[1] - active_square[1]*square_h)
-    y1 = int(y2 - square_h)
-    if y2 < paper_height - square_h//2:
-        y2 = int(y2 + EXTRA*square_h)
-    if y1 > square_h//2:
-        y1 = int(y1 - EXTRA*square_h)
-    print('Grid boundary: (%d, %d) (%d, %d)' % (x1, y1, x2, y2))
-    frame = frame[y1:y2, x1:x2]
-    cv2.imwrite("png/frame-square.png", frame)
     return frame
 
 def detect_grid_position(frame):
@@ -241,7 +211,7 @@ paper_width = paper[1][0] - paper[0][0]
 paper_height = paper[1][1] - paper[0][1]
 print("Paper boundary: %s w %d h %d" % (paper, paper_width, paper_height))
 aspect_ratio = paper_width/paper_height
-assert (aspect_ratio > 1.3) and (aspect_ratio < 1.5), 'wrong paper aspect ratio (%f)' % aspect_ratio
+assert (aspect_ratio > 0.9) and (aspect_ratio < 1.1), 'wrong paper aspect ratio (%f)' % aspect_ratio
 
 pen = compute_pen_boundaries()
 
