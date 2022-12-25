@@ -130,12 +130,12 @@ class Grbl:
 
     def present(self):
         print('origin %d, %d' % (self.origin_x, self.origin_y))
-        x = self.origin_x + 5*self.grid_size
+        x = self.origin_x + 7*self.grid_size
         print('x %d' % x)
         if x > self.MAX_X:
             x = self.MAX_X - 1
         print('x %d' % x)
-        y = self.origin_y + 5*self.grid_size
+        y = self.origin_y + 7*self.grid_size
         print('y %d' % y)
         if y > self.MAX_Y:
             y = self.MAX_Y - 1
