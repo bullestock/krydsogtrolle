@@ -143,9 +143,15 @@ def get_grid_pic(paper, active_square):
 def detect_grid_position(frame):
     h, v, xx, yy, output, nolines = detect.detect_grid(frame, 3*CAM_GRID_SIZE)
     print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
+    w = xx[1] - xx[0]
+    h = yy[1] - yy[0]
+    x1 = int(xx[0] - w/3)
+    x2 = int(xx[1] + w/3)
+    y1 = int(yy[0] - h/3)
+    y2 = int(yy[1] + h/3)
     cv2.imwrite('png/out.png', output)
     cv2.imwrite('png/nolines.png', nolines)
-    return (xx, yy)
+    return ((x1, x2), (y1, y2))
     
 def index_to_x(index):
     return index % 3

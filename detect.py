@@ -228,19 +228,19 @@ def detect_shape_contours(x, y, cell):
 
 def detect_symbols(pic, xx, yy, board):
     """
-    Return 3 x 3 array with X, O or None
+    Return 5 x 5 array with X, O or None
     """
     print("detect_symbols: %s, %s" % (xx, yy))
     grid_pic = pic[yy[0]:yy[1], xx[0]:xx[1]]
     cv2.imwrite("png/grid_pic.png", grid_pic)
 
-    dx = (xx[1] - xx[0])/3
-    dy = (yy[1] - yy[0])/3
+    dx = (xx[1] - xx[0])/5
+    dy = (yy[1] - yy[0])/5
     MARGIN=10
     symbols = []
-    for y in range(0, 3):
+    for y in range(0, 5):
         row = []
-        for x in range(0, 3):
+        for x in range(0, 5):
             sym = board[y][x]
             if sym == '.':
                 y1 = int(y*dy)
