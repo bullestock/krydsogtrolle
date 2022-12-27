@@ -144,7 +144,7 @@ class Grbl:
         
     def draw_circle(self, x, y, radius, speed=None):
         if not speed:
-            speed = self.draw_speed/4
+            speed = self.draw_speed/6
         self.write(b"G0X%dY%d\n" % (-(x-radius), y))
         self.pen_up(False)
         STEPS = 32
@@ -167,15 +167,17 @@ class Grbl:
         2    .  .  .
         """
         self.pen_up(True)
-        FILL = 0.6
         cx = self.origin_x + (2 - x + 0.5) * self.grid_size # X axis is positive left -> right
         cy = self.origin_y + (2 - y + 0.5) * self.grid_size # Y axis is positive bottom -> top
-        d = self.grid_size/2 * FILL
         if self.symbol == Symbol.CROSS:
+            FILL = 0.6
+            d = self.grid_size/2 * FILL
             self.draw_line(cx - d, cy - d, cx + d, cy + d)
             self.pen_up(True)
             self.draw_line(cx - d, cy + d, cx + d, cy - d)
         else:
+            FILL = 0.6
+            d = self.grid_size/2 * FILL
             self.draw_circle(cx, cy, d)
         self.pen_up(True)
 
