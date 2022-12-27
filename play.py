@@ -281,11 +281,11 @@ while True:
                         if row[x] != cur_squares[y][x]:
                             if row[x] == '.':
                                 fatal_error('New symbol at (%d, %d) is None' % (x, y))
-                            print('New: %c at (%d, %d)' % (row[x], x, y))
+                            new_symbol_x = x - 1
+                            new_symbol_y = y - 1
+                            print('New: %c at (%d, %d)' % (row[x], new_symbol_x, new_symbol_y))
                             if new_symbol:
                                 fatal_error('more than one new symbol')
-                            new_symbol_x = x
-                            new_symbol_y = y
                             new_symbol = row[x]
 
         first = False
