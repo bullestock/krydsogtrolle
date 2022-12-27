@@ -27,9 +27,6 @@ SQUARE_SIZE = 5*GRBL_GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
 
-active_square_x = 0
-active_square_y = 0
-
 def progress(msg):
     global display
     display.show(0, msg)
@@ -116,19 +113,6 @@ def convert_paper_to_pen(cb, pb, xy):
     return (max(0, int(cb[1][0] - (xy[0]*(cb[1][0] - cb[0][0])/pb[1][0]))),
             max(0, int(cb[0][1] + xy[1]/pb[1][1]/(cb[1][1] - cb[0][1]))))
 
-# Find next free square
-def get_next_square():
-    global active_square_x, active_square_y
-    sq = (active_square_x, active_square_y)
-    active_square_x = active_square_x + 1
-    if active_square_x >= MAX_X_SQUARE:
-        active_square_x = 0
-        active_square_y = active_square_y + 1
-        if active_square_y >= MAX_Y_SQUARE:
-            active_square_x = None
-            active_square_y = None
-    return sq
-
 # Enlarge an area by the specified amount on each side
 def enlarge(area, amount):
     return ((max(0, area[0][0] - amount), max(0, area[0][1] - amount)),
@@ -167,7 +151,11 @@ def wait_for_human_move():
     print('Please make your move')
     key = wait_key()
     print('%s was pressed' % key)
-    print('OK!')
+
+def wait_for_paper():
+    print('Please replace paper')
+    key = wait_key()
+    print('%s was pressed' % key)
 
 def wait_key():
     key = getkey()
@@ -185,19 +173,6 @@ parser.add_argument('-p', '--detectpaper',
                     action='store_true')
 args = parser.parse_args()
 
-if args.start:
-    start_args = args.start.split(',')
-    if len(start_args) != 2:
-        fatal_error('bad argument to --start: %s' % start_args)
-    active_square_x = int(start_args[0])
-    active_square_y = int(start_args[1])
-    if (active_square_x < 0 or
-        active_square_x > 3 or
-        active_square_y < 0 or
-        active_square_y > 2):
-        fatal_error('bad coords in --start: %s' % start_args)
-    print('Starting at (%d, %d)' % (active_square_x, active_square_y))
-    
 if not os.path.exists('png'):
     os.makedirs('png')
 
@@ -226,9 +201,7 @@ while True:
     board = Game()
     human_symbol = None
     game_over = False
-    active_square = get_next_square()
-    if active_square[0] is None:
-        fatal_error('out of paper')
+    active_square = (0, 0)
     active_square_origin = (GRBL_GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
                             GRBL_GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
     print("Active square: %s" % str(active_square_origin))
@@ -303,9 +276,10 @@ while True:
         if go:
             game_over = True
             display.show(1, '*** GAME OVER ***')
-            print('Game over!')
+            print('Game over! %s' % str(go))
             if plotter and go[0] != '.':
                 plotter.show_winner(go[1], go[2])
+            wait_for_paper()
             break
 
         my_symbol = board.get_enemy(human_symbol)
@@ -320,7 +294,10 @@ while True:
         if board.game_over():
             game_over = True
             display.show(1, '*** GAME OVER ***')
-            print('Game over!')
+            print('Game over! %s' % str(go))
+            if plotter and go[0] != '.':
+                plotter.show_winner(go[1], go[2])
+            wait_for_paper()
             break
 
         # Make room for human
