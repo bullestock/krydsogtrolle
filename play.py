@@ -298,7 +298,7 @@ while True:
         elif new_symbol != human_symbol:
             fatal_error('Illegal human move: %c' % new_symbol[1])
 
-        board.make_move(new_symbol_x, new_symbol_y, new_symbol)
+        board.make_human_move(new_symbol_x, new_symbol_y)
         go = board.game_over()
         if go:
             game_over = True
@@ -315,7 +315,7 @@ while True:
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
             plotter.draw_symbol(computer_move_x, computer_move_y)
-        board.make_computer_move(computer_move_x, computer_move_y)
+        board.make_computer_move(computer_move_x, computer_move_y, force=True)
 
         if board.game_over():
             game_over = True
