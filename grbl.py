@@ -140,13 +140,13 @@ class Grbl:
         if y > self.MAX_Y:
             y = self.MAX_Y - 1
         print('y %d' % y)
-        self.goto(x, y)
+        self.goto(x, y, self.max_speed)
         
     def draw_circle(self, x, y, radius, speed=None):
         if self.logfile:
             self.logfile.write("draw_circle(%d, %d)\n" % (x, y))
         if not speed:
-            speed = self.draw_speed/6
+            speed = self.draw_speed/8
         self.write(b"G0X%dY%d\n" % (-(x+radius), y))
         self.pen_up(False)
         STEPS = 32
