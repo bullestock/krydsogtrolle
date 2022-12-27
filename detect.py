@@ -184,7 +184,7 @@ def detect_grid(input, min_length):
 
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
-def detect_shape_contours(x, y, cell):
+def detect_shape_contours(x, y, cell, favour_cross=False):
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
     min = int(numpy.amin(cell))
     max = int(numpy.amax(cell))
@@ -221,8 +221,9 @@ def detect_shape_contours(x, y, cell):
     hull_area = cv2.contourArea(hull)
     solidity = float(area)/hull_area
     symbol = '.'
+    cross_limit = 0.80 if favour_cross else 0.75
     if nonzero > 100 and solidity < 0.99:
-        symbol = 'X' if solidity < 0.75 else 'O'
+        symbol = 'X' if solidity < cross_limit else 'O'
     print("cell%d%d: nz %d thr %d sol %f -> %s" % (x, y, nonzero, thr, solidity, symbol))
     return symbol
 
@@ -248,7 +249,9 @@ def detect_symbols(pic, xx, yy, board):
                 x1 = int(x*dx)
                 x2 = int((x+1)*dx) 
                 cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-                sym = detect_shape_contours(x, y, cell)
+                favour_cross = False
+                # TODO: Favour X if appropriate
+                sym = detect_shape_contours(x, y, cell, favour_cross)
             else:
                 print('Skip (%d, %d): %c' % (x, y, sym))
             row.append(sym)
