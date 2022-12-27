@@ -143,9 +143,11 @@ class Grbl:
         self.goto(x, y)
         
     def draw_circle(self, x, y, radius, speed=None):
+        if self.logfile:
+            self.logfile.write("draw_circle(%d, %d)\n" % (x, y))
         if not speed:
             speed = self.draw_speed/6
-        self.write(b"G0X%dY%d\n" % (-(x-radius), y))
+        self.write(b"G0X%dY%d\n" % (-(x+radius), y))
         self.pen_up(False)
         STEPS = 32
         for i in range(0, STEPS+1):
@@ -183,6 +185,7 @@ class Grbl:
 
     def show_winner(self, type, n):
         print('show_winner(%s, %d)' % (type, n))
+        
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Control plotter.')
