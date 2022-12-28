@@ -274,6 +274,16 @@ while True:
         board.make_human_move(new_symbol_x, new_symbol_y)
         go = board.game_over()
         if go:
+            if go[0] == '.':
+                # Draw, we can still win
+                print('Determining cheating move for %c' % my_symbol)
+                (m, computer_move_x, computer_move_y) = board.get_cheating_move()
+                progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
+                if plotter:
+                    plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
+                    plotter.draw_symbol(computer_move_x, computer_move_y)
+                board.make_computer_move(computer_move_x, computer_move_y, force=True)
+                go = board.game_over()
             game_over = True
             display.show(1, '*** GAME OVER ***')
             print('Game over! %s' % str(go))
