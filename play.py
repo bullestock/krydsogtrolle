@@ -289,6 +289,7 @@ while True:
             print('Game over! %s' % str(go))
             if plotter and go[0] != '.':
                 plotter.show_winner(go[1], go[2])
+                plotter.present()
             wait_for_paper()
             break
 
@@ -307,6 +308,7 @@ while True:
             print('Game over! %s' % str(go))
             if plotter and go[0] != '.':
                 plotter.show_winner(go[1], go[2])
+                plotter.present()
             wait_for_paper()
             break
 
