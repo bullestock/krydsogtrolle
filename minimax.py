@@ -498,7 +498,7 @@ class TestGameMethods(unittest.TestCase):
 
         (m, px, py) = g.get_human_move()
         g.make_human_move(px, py)
-        (m, px, py) = g.get_computer_move()
+        (m, px, py) = g.get_cheating_move()
         g.make_computer_move(px, py, force=True)
         self.assertEqual(px, 3)
         self.assertEqual(py, -1)
