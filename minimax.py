@@ -113,6 +113,12 @@ class Game:
         # It's a tie!
         return ('.', None, None)
 
+    def game_won(self):
+        go = self.game_over()
+        if not go:
+            return False
+        return go[0] != '.'
+
     def last_round(self):
         nof_occupied = 0
         for i in range(0, 3):
@@ -261,7 +267,7 @@ class Game:
             temp.copy(self)
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
-                if temp.game_over():
+                if temp.game_won():
                     return (10, x, y)
         # Scan lower border
         y = 3
@@ -270,7 +276,7 @@ class Game:
             temp.copy(self)
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
-                if temp.game_over():
+                if temp.game_won():
                     return (9, x, y)
         # Scan left border
         x = -1
@@ -279,7 +285,7 @@ class Game:
             temp.copy(self)
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
-                if temp.game_over():
+                if temp.game_won():
                     return (8, x, y)
         # Scan left border
         x = 3
@@ -288,7 +294,7 @@ class Game:
             temp.copy(self)
             if temp.is_valid(x, y, force=True):
                 temp.make_computer_move(x, y, force=True)
-                if temp.game_over():
+                if temp.game_won():
                     return (7, x, y)
         return None
 
@@ -515,11 +521,9 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(0, 1)
         g.make_computer_move(1, 1)
         g.make_computer_move(2, 2)
-        g.show()
         (m, px, py) = g.get_cheating_move()
         g.make_computer_move(px, py, force=True)
-        g.show()
-        self.assertEqual(px, 3)
+        self.assertEqual(px, 1)
         self.assertEqual(py, -1)
         
 if __name__ == "__main__":
