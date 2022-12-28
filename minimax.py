@@ -235,11 +235,19 @@ class Game:
         (m, hx, hy) = temp.get_human_move()
         if temp.is_valid(hx, hy):
             temp.make_human_move(hx, hy)
-            if temp.game_over() or self.last_round():
+            go = temp.game_over()
+            if go or self.last_round():
                 # panic!
+                print('Looking bad - after human move:')
+                if go:
+                    print('- game over')
+                if self.last_round():
+                    print('- last round')
+                temp.show()
                 temp.erase_move(hx, hy) # undo
                 cheat = temp.get_cheating_move()
                 if cheat:
+                    print('Cheating')
                     return cheat
         # No, just do our best for now 
         return move
