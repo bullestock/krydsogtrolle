@@ -526,7 +526,9 @@ class TestGameMethods(unittest.TestCase):
         self.assertEqual(px, 1)
         self.assertEqual(py, -1)
         go = g.game_over()
-        print(go)
+        self.assertEqual(go[0], 'O')
+        self.assertEqual(go[1], (1, -1))
+        self.assertEqual(go[2], (1, 1))
         
 if __name__ == "__main__":
     unittest.main()
