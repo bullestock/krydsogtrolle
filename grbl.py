@@ -93,7 +93,7 @@ class Grbl:
         pos = self.pen_up_position if up else self.pen_down_position
         self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
-        time.sleep(0.2)
+        time.sleep(0.8)
 
     def set_accel(self, accel):
         self.write(b"$120=%d\n" % accel)
@@ -189,12 +189,12 @@ class Grbl:
         y1 = self.origin_y + (2 - c1[1] + 0.5) * self.grid_size
         x2 = self.origin_x + (2 - c2[0] + 0.5) * self.grid_size
         y2 = self.origin_y + (2 - c2[1] + 0.5) * self.grid_size
-        self.pen_up(False)
+        self.pen_up(True)
         self.draw_line(x1, y1, x2, y2)
-        dx = 4
-        dy = 0 #!!
-        self.draw_line(x2 - dx, y2, x1 - dx, y1)
-        self.draw_line(x1 + dx, y1, x2 + dx, y2)
+        dx = 1 if y1 != y2 else 0
+        dy = 1 if x1 != x2 else 0
+        self.draw_line(x2 - dx, y2 - dy, x1 - dx, y1 - dy)
+        self.draw_line(x1 + dx, y1 - dy, x2 + dx, y2 - dy)
         self.pen_up(True)
 
 if __name__ == "__main__":
@@ -205,6 +205,8 @@ if __name__ == "__main__":
                         help='Make a dot at the specified position')
     parser.add_argument('--circle',
                         help='Draw a circle at the specified position')
+    parser.add_argument('--grid',
+                        help='Draw grid', action='store_true')
     parser.add_argument('--winner',
                         help='Show winner at the specified positions')
     parser.add_argument('--speedtest',
@@ -214,6 +216,9 @@ if __name__ == "__main__":
     l.enable_logging()
     if args.goto_max:
         l.goto(Grbl.MAX_X, Grbl.MAX_Y)
+        exit()
+    if args.grid:
+        l.draw_grid()
         exit()
     if args.dot:
         dot_args = args.dot.split(',')
@@ -234,6 +239,7 @@ if __name__ == "__main__":
         if len(winner_args) != 4:
             fatal_error('bad argument to --winner: %s' % winner_args)
         l.show_winner((int(winner_args[0]), int(winner_args[1])), (int(winner_args[2]), int(winner_args[3])))
+        l.present()
         exit()
     if args.speedtest:
         accel = 5000
