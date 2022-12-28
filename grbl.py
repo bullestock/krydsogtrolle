@@ -81,7 +81,7 @@ class Grbl:
             time.sleep(0.1)
 
     def goto(self, x, y, speed=20000):
-        #print("Go to %d, %d" % (x, y))
+        print("Go to %d, %d" % (x, y))
         if speed > self.max_speed:
             speed = self.max_speed
         self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
@@ -183,9 +183,19 @@ class Grbl:
             self.draw_circle(cx, cy, d)
         self.pen_up(True)
 
-    def show_winner(self, type, n):
-        print('show_winner(%s, %d)' % (type, n))
-        
+    def show_winner(self, c1, c2):
+        print('show_winner(%s, %s)' % (str(c1), str(c2)))
+        x1 = self.origin_x + (2 - c1[0] + 0.5) * self.grid_size
+        y1 = self.origin_y + (2 - c1[1] + 0.5) * self.grid_size
+        x2 = self.origin_x + (2 - c2[0] + 0.5) * self.grid_size
+        y2 = self.origin_y + (2 - c2[1] + 0.5) * self.grid_size
+        self.pen_up(False)
+        self.draw_line(x1, y1, x2, y2)
+        dx = 4
+        dy = 0 #!!
+        self.draw_line(x2 - dx, y2, x1 - dx, y1)
+        self.draw_line(x1 + dx, y1, x2 + dx, y2)
+        self.pen_up(True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Control plotter.')
@@ -195,6 +205,8 @@ if __name__ == "__main__":
                         help='Make a dot at the specified position')
     parser.add_argument('--circle',
                         help='Draw a circle at the specified position')
+    parser.add_argument('--winner',
+                        help='Show winner at the specified positions')
     parser.add_argument('--speedtest',
                         help='Run speed test', action='store_true')
     args = parser.parse_args()
@@ -216,6 +228,12 @@ if __name__ == "__main__":
         if len(circle_args) != 2:
             fatal_error('bad argument to --circle: %s' % circle_args)
         l.draw_circle(int(circle_args[0]), int(circle_args[1]), 10)
+        exit()
+    if args.winner:
+        winner_args = args.winner.split(',')
+        if len(winner_args) != 4:
+            fatal_error('bad argument to --winner: %s' % winner_args)
+        l.show_winner((int(winner_args[0]), int(winner_args[1])), (int(winner_args[2]), int(winner_args[3])))
         exit()
     if args.speedtest:
         accel = 5000
