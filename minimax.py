@@ -236,13 +236,11 @@ class Game:
         if temp.is_valid(hx, hy):
             temp.make_human_move(hx, hy)
             go = temp.game_over()
-            if go or self.last_round():
+            if go and go[0] != '.':
                 # panic!
                 print('Looking bad - after human move:')
                 if go:
                     print('- game over')
-                if self.last_round():
-                    print('- last round')
                 temp.show()
                 temp.erase_move(hx, hy) # undo
                 cheat = temp.get_cheating_move()
@@ -488,7 +486,7 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(3, 0, force=True)
         self.assertEqual(g.game_over()[0], 'O')
 
-    def test_find_cheat_move(self):
+    def test_find_cheat_move_1(self):
         g = Game()
         g.set_human('O')
 
@@ -502,6 +500,25 @@ class TestGameMethods(unittest.TestCase):
         g.make_human_move(px, py)
         (m, px, py) = g.get_computer_move()
         g.make_computer_move(px, py, force=True)
+        self.assertEqual(px, 3)
+        self.assertEqual(py, -1)
+        
+    def test_find_cheat_move_2(self):
+        g = Game()
+        g.set_human('X')
+        g.make_human_move(0, 0)
+        g.make_human_move(2, 0)
+        g.make_human_move(2, 1)
+        g.make_human_move(0, 2)
+        g.make_human_move(1, 2)
+        g.make_computer_move(1, 0)
+        g.make_computer_move(0, 1)
+        g.make_computer_move(1, 1)
+        g.make_computer_move(2, 2)
+        g.show()
+        (m, px, py) = g.get_cheating_move()
+        g.make_computer_move(px, py, force=True)
+        g.show()
         self.assertEqual(px, 3)
         self.assertEqual(py, -1)
         
