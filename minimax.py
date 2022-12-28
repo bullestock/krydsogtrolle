@@ -53,15 +53,15 @@ class Game:
                 if (self.is_occupied(j, i) and
                     self.current_state[j][i] == self.current_state[j+1][i] and
                     self.current_state[j][i] == self.current_state[j+2][i]):
-                    return (self.current_state[j][i], (i, j), (i, j+2))
+                    return (self.current_state[j][i], (i-1, j-1), (i-1, j+1))
 
         # Horizontal win
         for i in range(0, 5):
             for j in range(0, 3):
                 if (self.current_state[i][j:j+3] == ['X', 'X', 'X']):
-                    return ('X', (i, j), (i, j+2))
+                    return ('X', (i-1, j-1), (i-1, j+1))
                 elif (self.current_state[i][j:j+3] == ['O', 'O', 'O']):
-                    return ('O', (i, j), (i, j+2))
+                    return ('O', (i-1, j-1), (i-1, j+1))
 
         # Main diagonal wins
         # Left
@@ -69,19 +69,19 @@ class Game:
             if (self.is_occupied(j+1, j) and
                 self.current_state[j+1][j] == self.current_state[j+2][j+1] and
                 self.current_state[j+1][j] == self.current_state[j+3][j+2]):
-                return (self.current_state[j+1][j], (j+1, j), (j+3, j+3))
+                return (self.current_state[j+1][j], (j, j-1), (j+2, j+2))
         # Center
         for j in range(0, 3):
             if (self.is_occupied(0+j, 0+j) and
                 self.current_state[0+j][0+j] == self.current_state[1+j][1+j] and
                 self.current_state[0+j][0+j] == self.current_state[2+j][2+j]):
-                return (self.current_state[0+j][0+j], (j, j), (j+2, j+2))
+                return (self.current_state[0+j][0+j], (j-1, j-1), (j+1, j+1))
         # Right
         for j in range(0, 2):
             if (self.is_occupied(j, j+1) and
                 self.current_state[j][j+1] == self.current_state[j+1][j+2] and
                 self.current_state[j][j+1] == self.current_state[j+2][j+3]):
-                return (self.current_state[j][j+1], (j, j+1), (j+2, j+3))
+                return (self.current_state[j][j+1], (j-1, j), (j+1, j+2))
 
         # Second diagonal wins
         # Left
@@ -89,19 +89,19 @@ class Game:
             if (self.is_occupied(j, 3-j) and
                 self.current_state[j][3-j] == self.current_state[j+1][2-j] and
                 self.current_state[j][3-j] == self.current_state[j+2][1-j]):
-                return (self.current_state[j][3-j], (j, 3-j), (j+2, 1-j))
+                return (self.current_state[j][3-j], (j-1, 2-j), (j+1, 0-j))
         # Center
         for j in range(0, 3):
             if (self.is_occupied(j, 4-j) and
                 self.current_state[j][4-j] == self.current_state[j+1][3-j] and
                 self.current_state[j][4-j] == self.current_state[j+2][2-j]):
-                return (self.current_state[j][4-j], (j, 4-j), (j+2, 2-j))
+                return (self.current_state[j][4-j], (j-1, 3-j), (j+1, 1-j))
         # Right
         for j in range(0, 2):
             if (self.is_occupied(j+1, 4-j) and
                 self.current_state[j+1][4-j] == self.current_state[j+2][3-j] and
                 self.current_state[j+1][4-j] == self.current_state[j+3][2-j]):
-                return (self.current_state[j+1][4-j], (j+1, 4-j), (j+3, 2-j))
+                return (self.current_state[j+1][4-j], (j, 3-j), (j+2, 1-j))
 
         # Is whole board full?
         for i in range(0, 3):
@@ -525,6 +525,8 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(px, py, force=True)
         self.assertEqual(px, 1)
         self.assertEqual(py, -1)
+        go = g.game_over()
+        print(go)
         
 if __name__ == "__main__":
     unittest.main()
