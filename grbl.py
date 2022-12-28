@@ -24,6 +24,7 @@ class Grbl:
         self.draw_speed = 12000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
+        self.is_pen_up = None
         print("Opening serial port")
         self.ser = serial.Serial(port = serial_port,
             baudrate = 115200,
@@ -68,7 +69,7 @@ class Grbl:
             reply = reply.strip()
             if reply == b'ok':
                 break
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     def wait_for_idle(self):
         while True:
@@ -93,7 +94,9 @@ class Grbl:
         pos = self.pen_up_position if up else self.pen_down_position
         self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
-        time.sleep(0.8)
+        if self.is_pen_up != up:
+            time.sleep(0.8)
+        self.is_pen_up = up
 
     def set_accel(self, accel):
         self.write(b"$120=%d\n" % accel)
