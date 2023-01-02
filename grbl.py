@@ -82,7 +82,7 @@ class Grbl:
             time.sleep(0.1)
 
     def goto(self, x, y, speed=20000):
-        print("Go to %d, %d" % (x, y))
+        #print("Go to %d, %d" % (x, y))
         if speed > self.max_speed:
             speed = self.max_speed
         self.write(b"G1X%dY%dF%d\n" % (-x, y, speed))
@@ -95,7 +95,7 @@ class Grbl:
         self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
         if self.is_pen_up != up:
-            time.sleep(0.8)
+            time.sleep(0.6)
         self.is_pen_up = up
 
     def set_accel(self, accel):
@@ -192,6 +192,21 @@ class Grbl:
         y1 = self.origin_y + (2 - c1[1] + 0.5) * self.grid_size
         x2 = self.origin_x + (2 - c2[0] + 0.5) * self.grid_size
         y2 = self.origin_y + (2 - c2[1] + 0.5) * self.grid_size
+        extra = 5
+        if x1 == x2:
+            if y1 > y2:
+                y1 = y1 + extra
+                y2 = y2 - extra
+            else:
+                y1 = y1 - extra
+                y2 = y2 + extra
+        else:
+            if x1 > x2:
+                x1 = x1 + extra
+                x2 = x2 - extra
+            else:
+                x1 = x1 - extra
+                x2 = x2 + extra
         self.pen_up(True)
         self.draw_line(x1, y1, x2, y2)
         dx = 1 if y1 != y2 else 0
