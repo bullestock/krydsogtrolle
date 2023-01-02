@@ -59,9 +59,9 @@ class Game:
         for i in range(0, 5):
             for j in range(0, 3):
                 if (self.current_state[i][j:j+3] == ['X', 'X', 'X']):
-                    return ('X', (j-1, i-1), (i-1, j+1))
+                    return ('X', (j-1, i-1), (j+1, i-1))
                 elif (self.current_state[i][j:j+3] == ['O', 'O', 'O']):
-                    return ('O', (j-1, i-1), (i-1, j+1))
+                    return ('O', (j-1, i-1), (j+1, i-1))
 
         # Main diagonal wins
         # Left
@@ -89,19 +89,19 @@ class Game:
             if (self.is_occupied(3-j, j) and
                 self.current_state[j][3-j] == self.current_state[j+1][2-j] and
                 self.current_state[j][3-j] == self.current_state[j+2][1-j]):
-                return (self.current_state[j][3-j], (2-j, j-1), (j+1, 0-j))
+                return (self.current_state[j][3-j], (2-j, j-1), (0-j, j+1))
         # Center
         for j in range(0, 3):
             if (self.is_occupied(4-j, j) and
                 self.current_state[j][4-j] == self.current_state[j+1][3-j] and
                 self.current_state[j][4-j] == self.current_state[j+2][2-j]):
-                return (self.current_state[j][4-j], (3-j, j-1), (j+1, 1-j))
+                return (self.current_state[j][4-j], (3-j, j-1), (1-j, j+1))
         # Right
         for j in range(0, 2):
             if (self.is_occupied(4-j, j+1) and
                 self.current_state[j+1][4-j] == self.current_state[j+2][3-j] and
                 self.current_state[j+1][4-j] == self.current_state[j+3][2-j]):
-                return (self.current_state[j+1][4-j], (3-j, j), (j+2, 1-j))
+                return (self.current_state[j+1][4-j], (3-j, j), (1-j, j+2))
 
         # Is whole board full?
         for i in range(0, 3):
@@ -318,9 +318,9 @@ class Game:
         return None
 
     def verify_winner(self, go):
-        self.show()
+        sym = go[0]
         c1 = go[1]
-        c2 = go[1]
+        c2 = go[2]
         x = c1[0]
         y = c1[1]
         dx = 0
@@ -330,10 +330,13 @@ class Game:
         if y != c2[1]:
             dy = 1 if y < c2[1] else -1
         for i in range(0, 3):
-            self.current_state[y][x] = '#'
+            if self.current_state[y+1][x+1] != sym:
+                print('Error: Expected %c at %d, %d (%s -> %s)' % (sym, x, y, str(c1), str(c2)))
+                self.show()
+                return False
             x = x + dx
             y = y + dy
-        self.show()
+        return True
 
 def main2():
     g = Game()
@@ -396,19 +399,24 @@ class TestGameMethods(unittest.TestCase):
             go = g.game_over()
             self.assertFalse(go is None)
             self.assertEqual(go[0], 'O')
+            self.assertTrue(g.verify_winner(go))
         # Horizontal
         for y in range(0, 3):
             g = Game()
             g.set_human('O')
             for x in range(0, 3):
                 g.make_human_move(x, y)
-            self.assertEqual(g.game_over()[0], 'O')
+            go = g.game_over()
+            self.assertEqual(go[0], 'O')
+            self.assertTrue(g.verify_winner(go))
         # Diagonal (just test one)
         g = Game()
         g.set_human('O')
         for x in range(0, 3):
             g.make_human_move(x, x)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
 
     def test_game_over_cheat(self):
         # Vertical
@@ -420,9 +428,7 @@ class TestGameMethods(unittest.TestCase):
                     g.make_computer_move(i + x, y, force=True)
                 go = g.game_over()
                 self.assertEqual(go[0], 'O')
-                #g.verify_winner(go)
-                #break
-            #break
+                self.assertTrue(g.verify_winner(go))
         # Horizontal
         for i in range(-1, 2):
             for y in range(0, 3):
@@ -432,6 +438,7 @@ class TestGameMethods(unittest.TestCase):
                     g.make_computer_move(i + x, y, force=True)
                 go = g.game_over()
                 self.assertEqual(go[0], 'O')
+                self.assertTrue(g.verify_winner(go))
         # Diagonals \
         # Left 1
         g = Game()
@@ -439,49 +446,63 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(-1, 0, force=True)
         g.make_computer_move(0, 1, force=True)
         g.make_computer_move(1, 2, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Left 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(0, 1, force=True)
         g.make_computer_move(1, 2, force=True)
         g.make_computer_move(2, 3, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 1
         g = Game()
         g.set_human('X')
         g.make_computer_move(-1, -1, force=True)
         g.make_computer_move(0, 0, force=True)
         g.make_computer_move(1, 1, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(0, 0, force=True)
         g.make_computer_move(1, 1, force=True)
         g.make_computer_move(2, 2, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 3
         g = Game()
         g.set_human('X')
         g.make_computer_move(1, 1, force=True)
         g.make_computer_move(2, 2, force=True)
         g.make_computer_move(3, 3, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Right 1
         g = Game()
         g.set_human('X')
         g.make_computer_move(0, -1, force=True)
         g.make_computer_move(1, 0, force=True)
         g.make_computer_move(2, 1, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Right 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(1, 0, force=True)
         g.make_computer_move(2, 1, force=True)
         g.make_computer_move(3, 2, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Diagonals /
         # Left 1
         g = Game()
@@ -489,28 +510,36 @@ class TestGameMethods(unittest.TestCase):
         g.make_computer_move(0, 1, force=True)
         g.make_computer_move(1, 0, force=True)
         g.make_computer_move(2, -1, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Left 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(-1, 2, force=True)
         g.make_computer_move(0, 1, force=True)
         g.make_computer_move(1, 0, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 1
         g = Game()
         g.set_human('X')
         g.make_computer_move(-1, 3, force=True)
         g.make_computer_move(0, 2, force=True)
         g.make_computer_move(1, 1, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(0, 2, force=True)
         g.make_computer_move(1, 1, force=True)
         g.make_computer_move(2, 0, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Center 3
         g = Game()
         g.set_human('X')
@@ -521,20 +550,25 @@ class TestGameMethods(unittest.TestCase):
         self.assertEqual(go[0], 'O')
         self.assertEqual(go[1], (3, -1))
         self.assertEqual(go[2], (1, 1))
+        self.assertTrue(g.verify_winner(go))
         # Right 1
         g = Game()
         g.set_human('X')
         g.make_computer_move(0, 3, force=True)
         g.make_computer_move(1, 2, force=True)
         g.make_computer_move(2, 1, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
         # Right 2
         g = Game()
         g.set_human('X')
         g.make_computer_move(1, 2, force=True)
         g.make_computer_move(2, 1, force=True)
         g.make_computer_move(3, 0, force=True)
-        self.assertEqual(g.game_over()[0], 'O')
+        go = g.game_over()
+        self.assertEqual(go[0], 'O')
+        self.assertTrue(g.verify_winner(go))
 
     def test_find_cheat_move_1(self):
         g = Game()
