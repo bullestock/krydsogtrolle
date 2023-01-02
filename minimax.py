@@ -232,10 +232,26 @@ class Game:
 
         return (minv, qx, qy)
 
-    def get_computer_move(self):
+    def moves_left(self):
+        """
+        Get number of moves left until board is full
+        """
+        n = 3*3
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if self.is_occupied(i+1, j+1):
+                    n = n - 1
+        return n
+
+    def get_computer_move(self, allow_early_cheat=False):
         """
         Return (m, x, y, cheating)
         """
+        if allow_early_cheat and self.moves_left() <= 4:
+            cheat = self.get_cheating_move()
+            if cheat:
+                print('Cheating')
+                return (cheat[0], cheat[1], cheat[2], True)
         move = self.max_alpha_beta(-2, 2)
         temp = Game()
         temp.copy(self)
@@ -533,5 +549,20 @@ class TestGameMethods(unittest.TestCase):
         self.assertEqual(go[1], (1, -1))
         self.assertEqual(go[2], (1, 1))
         
+    def test_find_early_cheat(self):
+        g = Game()
+        g.set_human('O')
+
+        for i in range(0, 3):
+            (m, px, py) = g.get_human_move()
+            g.make_human_move(px, py)
+            (m, px, py, cheating) = g.get_computer_move()
+            g.make_computer_move(px, py, force=True)
+        (m, px, py, cheating) = g.get_computer_move(allow_early_cheat=True)
+        g.make_computer_move(px, py, force=True)
+        self.assertTrue(cheating)
+        self.assertEqual(px, 3)
+        self.assertEqual(py, -1)
+
 if __name__ == "__main__":
     unittest.main()
