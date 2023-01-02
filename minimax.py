@@ -41,7 +41,7 @@ class Game:
         return False
 
     def is_occupied(self, x, y):
-        return self.current_state[x][y] != '.' and self.current_state[x][y] != ' '
+        return self.current_state[y][x] != '.' and self.current_state[y][x] != ' '
 
     # Checks if the game has ended.
     # If yes, returns (winner, coord1, coord2)
@@ -50,7 +50,7 @@ class Game:
         # Vertical win
         for i in range(0, 5):
             for j in range(0, 3):
-                if (self.is_occupied(j, i) and
+                if (self.is_occupied(i, j) and
                     self.current_state[j][i] == self.current_state[j+1][i] and
                     self.current_state[j][i] == self.current_state[j+2][i]):
                     return (self.current_state[j][i], (i-1, j-1), (i-1, j+1))
@@ -66,7 +66,7 @@ class Game:
         # Main diagonal wins
         # Left
         for j in range(0, 2):
-            if (self.is_occupied(j+1, j) and
+            if (self.is_occupied(j, j+1) and
                 self.current_state[j+1][j] == self.current_state[j+2][j+1] and
                 self.current_state[j+1][j] == self.current_state[j+3][j+2]):
                 return (self.current_state[j+1][j], (j-1, j), (j+2, j+2))
@@ -78,7 +78,7 @@ class Game:
                 return (self.current_state[0+j][0+j], (j-1, j-1), (j+1, j+1))
         # Right
         for j in range(0, 2):
-            if (self.is_occupied(j, j+1) and
+            if (self.is_occupied(j+1, j) and
                 self.current_state[j][j+1] == self.current_state[j+1][j+2] and
                 self.current_state[j][j+1] == self.current_state[j+2][j+3]):
                 return (self.current_state[j][j+1], (j, j-1), (j+1, j+2))
@@ -86,19 +86,19 @@ class Game:
         # Second diagonal wins
         # Left
         for j in range(0, 2):
-            if (self.is_occupied(j, 3-j) and
+            if (self.is_occupied(3-j, j) and
                 self.current_state[j][3-j] == self.current_state[j+1][2-j] and
                 self.current_state[j][3-j] == self.current_state[j+2][1-j]):
                 return (self.current_state[j][3-j], (2-j, j-1), (j+1, 0-j))
         # Center
         for j in range(0, 3):
-            if (self.is_occupied(j, 4-j) and
+            if (self.is_occupied(4-j, j) and
                 self.current_state[j][4-j] == self.current_state[j+1][3-j] and
                 self.current_state[j][4-j] == self.current_state[j+2][2-j]):
                 return (self.current_state[j][4-j], (3-j, j-1), (j+1, 1-j))
         # Right
         for j in range(0, 2):
-            if (self.is_occupied(j+1, 4-j) and
+            if (self.is_occupied(4-j, j+1) and
                 self.current_state[j+1][4-j] == self.current_state[j+2][3-j] and
                 self.current_state[j+1][4-j] == self.current_state[j+3][2-j]):
                 return (self.current_state[j+1][4-j], (3-j, j), (j+2, 1-j))
@@ -142,7 +142,7 @@ class Game:
             self.show()
             raise Exception('Illegal move: x %s y %s' % (str(x), str(y)))
         if force:
-            if self.is_occupied(y+1, x+1):
+            if self.is_occupied(x+1, y+1):
                 raise Exception('Illegal move at (%d, %d)' % (x, y))
         elif self.current_state[y+1][x+1] != '.':
             raise Exception('Illegal move at (%d, %d)' % (x, y))
