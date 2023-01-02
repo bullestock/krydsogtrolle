@@ -3,6 +3,7 @@ import serial
 import math
 import time
 from enum import Enum
+from random import randint
 
 class Symbol(Enum):
     CROSS = 1
@@ -107,6 +108,7 @@ class Grbl:
         time.sleep(1)
 
     def draw_line(self, x1, y1, x2, y2, speed=None):
+        print("line %d, %d ->  %d, %d" % (x1, y1, x2, y2))
         move_speed = self.max_speed
         draw_speed = self.draw_speed
         if speed:
@@ -134,15 +136,11 @@ class Grbl:
     def present(self):
         print('origin %d, %d' % (self.origin_x, self.origin_y))
         x = self.origin_x + 7*self.grid_size
-        print('x %d' % x)
         if x > self.MAX_X:
             x = self.MAX_X - 1
-        print('x %d' % x)
         y = self.origin_y + 7*self.grid_size
-        print('y %d' % y)
         if y > self.MAX_Y:
             y = self.MAX_Y - 1
-        print('y %d' % y)
         self.goto(x, y, self.max_speed)
         
     def draw_circle(self, x, y, radius, speed=None):
@@ -211,8 +209,8 @@ class Grbl:
         self.draw_line(x1, y1, x2, y2)
         dx = 1 if y1 != y2 else 0
         dy = 1 if x1 != x2 else 0
-        self.draw_line(x2 - dx, y2 - dy, x1 - dx, y1 - dy)
-        self.draw_line(x1 + dx, y1 - dy, x2 + dx, y2 - dy)
+        self.draw_line(x2 - dx*randint(1, 4), y2 - dy*randint(1, 4), x1 - dx*randint(1, 4), y1 - dy*randint(1, 4))
+        self.draw_line(x1 + dx*randint(1, 4), y1 - dy*randint(1, 4), x2 + dx*randint(1, 4), y2 - dy*randint(1, 4))
         self.pen_up(True)
 
 if __name__ == "__main__":
