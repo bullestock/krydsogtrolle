@@ -233,6 +233,9 @@ class Game:
         return (minv, qx, qy)
 
     def get_computer_move(self):
+        """
+        Return (m, x, y, cheating)
+        """
         move = self.max_alpha_beta(-2, 2)
         temp = Game()
         temp.copy(self)
@@ -252,9 +255,9 @@ class Game:
                 cheat = temp.get_cheating_move()
                 if cheat:
                     print('Cheating')
-                    return cheat
+                    return (cheat[0], cheat[1], cheat[2], True)
         # No, just do our best for now 
-        return move
+        return (move[0], move[1], move[2], False)
 
     def get_human_move(self):
         return self.min_alpha_beta(-2, 2)
@@ -340,10 +343,10 @@ class TestGameMethods(unittest.TestCase):
         g = Game()
         g.set_human('O')
         g.make_human_move(1, 1)
-        (m, px, py) = g.get_computer_move()
+        (m, px, py, cheating) = g.get_computer_move()
         g.make_computer_move(px, py)
         g.make_human_move(0, 1)
-        (m, px, py) = g.get_computer_move()
+        (m, px, py, cheating) = g.get_computer_move()
         g.make_computer_move(px, py)
         # Computer must play (2, 1) to prevent human win
         self.assertEqual(px, 2)
@@ -499,7 +502,7 @@ class TestGameMethods(unittest.TestCase):
         for i in range(0, 3):
             (m, px, py) = g.get_human_move()
             g.make_human_move(px, py)
-            (m, px, py) = g.get_computer_move()
+            (m, px, py, cheating) = g.get_computer_move()
             g.make_computer_move(px, py, force=True)
 
         (m, px, py) = g.get_human_move()

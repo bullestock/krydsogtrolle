@@ -235,7 +235,7 @@ if __name__ == "__main__":
         circle_args = args.circle.split(',')
         if len(circle_args) != 2:
             fatal_error('bad argument to --circle: %s' % circle_args)
-        l.draw_circle(int(circle_args[0]), int(circle_args[1]), 10)
+        l.draw_circle(int(circle_args[0]), int(circle_args[1]), 15/2*0.6)
         exit()
     if args.winner:
         winner_args = args.winner.split(',')

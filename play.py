@@ -295,7 +295,7 @@ while True:
 
         my_symbol = board.get_enemy(human_symbol)
         print('Determining move for %c' % my_symbol)
-        (m, computer_move_x, computer_move_y) = board.get_computer_move()
+        (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move()
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
