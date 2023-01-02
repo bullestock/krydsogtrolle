@@ -13,6 +13,7 @@ import detect
 import display
 from getkey import getkey, keys
 from minimax import Game
+from random import randint
 
 port = 0
 cam = cv2.VideoCapture(port)
@@ -295,14 +296,22 @@ while True:
 
         my_symbol = board.get_enemy(human_symbol)
         print('Determining move for %c' % my_symbol)
-        (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move()
+        (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move(allow_early_cheat=True)
+        if plotter and cheating:
+            # Fake some moves
+            for i in range(0, 3):
+                x = randint(0, 2)
+                y = randint(0, 2)
+                plotter.goto_grid(x, y)
+                time.sleep(randint(200, 1000)/1000)
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
             plotter.set_symbol(grbl.Symbol.CROSS if my_symbol == 'X' else grbl.Symbol.NOUGHT)
             plotter.draw_symbol(computer_move_x, computer_move_y)
         board.make_computer_move(computer_move_x, computer_move_y, force=True)
 
-        if board.game_over():
+        go = board.game_over()
+        if go:
             game_over = True
             display.show(1, '*** GAME OVER ***')
             print('Game over! %s' % str(go))
