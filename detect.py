@@ -3,6 +3,7 @@ import numpy
 import math
 import statistics
 from shapely.geometry import LineString, Point
+from minimax import Game
 
 DEBUG = True
 SILLYDEBUG = False
@@ -259,26 +260,11 @@ def detect_symbols(pic, xx, yy, board):
     return symbols
                 
 if __name__ == "__main__":
-    input = cv2.imread('slice.png')
-    K = 8
-    quantized = quantize(input, K)
-    cv2.imwrite('png/quant.png', quantized)
-    h, v, xx, yy, output, nolines = detect_grid(quantized, 150)
-    cv2.imwrite('png/out.png', output)
-    cv2.imwrite('png/nolines.png', nolines)
-
-    gray = cv2.cvtColor(nolines, cv2.COLOR_BGR2GRAY)
-
-    dx = (xx[1] - xx[0])/3
-    dy = (yy[1] - yy[0])/3
-    MARGIN=7
-    for i in range(0, 3):
-        for j in range(0, 3):
-            y1 = int(yy[0]+j*dy)
-            y2 = int(yy[0]+(j+1)*dy)
-            x1 = int(xx[0]+i*dx)
-            x2 = int(xx[0]+(i+1)*dx) 
-            cell = nolines[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-            graycell = gray[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-            detect_shape_contours(i, j, cell, graycell)
+    input = cv2.imread('out.png')
+    xx = (37, 345)
+    yy = (62, 367)
+    pic = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
+    board = Game()
+    cur_squares = board.get_board()
+    new_squares = detect_symbols(pic, xx, yy, cur_squares)
 
