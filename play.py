@@ -270,7 +270,7 @@ while True:
             board.set_human(human_symbol)
             print('Human is playing %c' % human_symbol)
         elif new_symbol != human_symbol:
-            fatal_error('Illegal human move: %c' % new_symbol[1])
+            fatal_error('Illegal human move: %c' % new_symbol)
 
         board.make_human_move(new_symbol_x, new_symbol_y)
         go = board.game_over()
@@ -302,7 +302,8 @@ while True:
             for i in range(0, 3):
                 x = randint(0, 2)
                 y = randint(0, 2)
-                plotter.goto_grid(x, y)
+                speed = randint(2000, 5000)
+                plotter.goto_grid(x, y, speed=speed)
                 time.sleep(randint(200, 1000)/1000)
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
         if plotter:
