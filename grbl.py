@@ -22,7 +22,7 @@ class Grbl:
         self.pen_up_position = 650
         self.pen_down_position = 965
         self.max_speed = 15000
-        self.draw_speed = 12000
+        self.draw_speed = 15000
         self.grid_size = grid_size
         self.symbol = Symbol.CROSS
         self.is_pen_up = None
@@ -96,7 +96,7 @@ class Grbl:
         self.write(b"G4P0M3S%d\n" % pos)
         self.wait_for_ok()
         if self.is_pen_up != up:
-            time.sleep(0.6)
+            time.sleep(0.3)
         self.is_pen_up = up
 
     def set_accel(self, accel):
@@ -160,6 +160,11 @@ class Grbl:
         self.wait_for_idle()
         self.pen_up(True)
 
+    def goto_grid(self, x, y, speed=1000):
+        cx = self.origin_x + (2 - x + 0.5) * self.grid_size # X axis is positive left -> right
+        cy = self.origin_y + (2 - y + 0.5) * self.grid_size # Y axis is positive bottom -> top
+        self.goto(cx, cy, speed)
+        
     def draw_symbol(self, x, y):
         """
         Draw current symbol at (x, y)
