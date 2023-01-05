@@ -247,7 +247,8 @@ class Game:
         """
         Return (m, x, y, cheating)
         """
-        if allow_early_cheat and self.moves_left() <= 4:
+        # TODO: Don't cheat unless necessary
+        if allow_early_cheat and self.moves_left() <= 3:
             cheat = self.get_cheating_move()
             if cheat:
                 print('Cheating')
