@@ -247,16 +247,20 @@ class Game:
         """
         Return (m, x, y, cheating)
         """
-        # TODO: Don't cheat unless necessary
-        if allow_early_cheat and self.moves_left() <= 3:
-            cheat = self.get_cheating_move()
-            if cheat:
-                print('Cheating')
-                return (cheat[0], cheat[1], cheat[2], True)
         move = self.max_alpha_beta(-2, 2)
         temp = Game()
         temp.copy(self)
         temp.make_computer_move(move[1], move[2])
+        if allow_early_cheat and self.moves_left() <= 3:
+            # First check if we can win without cheating
+            go = temp.game_over()
+            cheat = self.get_cheating_move()
+            if go and go[0] == self.computer_symbol:
+                # We will win
+                return (move[0], move[1], move[2], False)
+            if cheat:
+                print('Cheating')
+                return (cheat[0], cheat[1], cheat[2], True)
         # Can the human win in next move?
         (m, hx, hy) = temp.get_human_move()
         if temp.is_valid(hx, hy):
@@ -624,5 +628,28 @@ class TestGameMethods(unittest.TestCase):
         self.assertEqual(px, 3)
         self.assertEqual(py, -1)
 
+    def test_only_cheat_if_needed(self):
+        g = Game()
+        g.set_human('O')
+
+        #   X O
+        # O
+        # O O X
+        g.make_human_move(2, 0)
+        g.make_human_move(0, 1)
+        g.make_human_move(0, 2)
+        g.make_human_move(1, 2)
+        g.make_computer_move(1, 0)
+        g.make_computer_move(1, 1)
+        g.make_computer_move(2, 2)
+        (m, px, py, cheating) = g.get_computer_move(allow_early_cheat=True)
+        self.assertFalse(cheating)
+        self.assertEqual(px, 0)
+        self.assertEqual(py, 0)
+        g.make_computer_move(px, py)
+        go = g.game_over()
+        self.assertFalse(go is None)
+        self.assertEqual(go[0], 'X')
+        
 if __name__ == "__main__":
     unittest.main()
