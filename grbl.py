@@ -12,9 +12,10 @@ class Symbol(Enum):
 class Grbl:
     MAX_X = 345
     MAX_Y = 260
+    GRID_SIZE = 27
     def __init__(self,
                  serial_port = "/dev/ttyUSB0",
-                 grid_size = 20,
+                 grid_size = GRID_SIZE,
                  home = True):
         self.logfile = None
         self.origin_x = 0
@@ -135,10 +136,10 @@ class Grbl:
 
     def present(self):
         print('origin %d, %d' % (self.origin_x, self.origin_y))
-        x = self.origin_x + 7*self.grid_size
+        x = self.origin_x + 5*self.grid_size
         if x > self.MAX_X:
             x = self.MAX_X - 1
-        y = self.origin_y + 7*self.grid_size
+        y = self.origin_y + 5*self.grid_size
         if y > self.MAX_Y:
             y = self.MAX_Y - 1
         self.goto(x, y, self.max_speed)
@@ -150,7 +151,7 @@ class Grbl:
             speed = self.draw_speed/8
         self.write(b"G0X%dY%d\n" % (-(x+radius), y))
         self.pen_up(False)
-        STEPS = 32
+        STEPS = 24
         for i in range(0, STEPS+1):
             angle = i*2*math.pi/STEPS
             cx = x + math.cos(angle)*radius
@@ -253,7 +254,12 @@ if __name__ == "__main__":
         circle_args = args.circle.split(',')
         if len(circle_args) != 2:
             fatal_error('bad argument to --circle: %s' % circle_args)
-        l.draw_circle(int(circle_args[0]), int(circle_args[1]), 15/2*0.6)
+        x = int(circle_args[0])
+        y = int(circle_args[1])
+        d = Grbl.GRID_SIZE/2*0.6
+        cx = l.origin_x + (x + 0.5) * l.grid_size
+        cy = l.origin_y + (y + 0.5) * l.grid_size
+        l.draw_circle(cx, cy, d)
         exit()
     if args.winner:
         winner_args = args.winner.split(',')
