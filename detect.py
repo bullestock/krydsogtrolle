@@ -193,7 +193,7 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
     if max - min < 50:
         # Evenly filled cell
         return '.'
-    thr = int((min + max)/2 + 0.2*(max - min))
+    thr = int((min + max)/2) # + 0.2*(max - min))
     ret, thresh = cv2.threshold(cell, thr, 255, cv2.THRESH_BINARY)
     cv2.imwrite("png/cell%d%dthres.png" % (x, y), thresh)
     # Calculate nonzero pixels to eliminate noise

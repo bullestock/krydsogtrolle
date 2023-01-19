@@ -22,9 +22,8 @@ cam.set(cv2.CAP_PROP_BUFFERSIZE, 1) # don't store old frames
 display = display.Display()
 display.show(0, 'Starting')
 
-GRBL_GRID_SIZE = 15
 CAM_GRID_SIZE = 60
-SQUARE_SIZE = 5*GRBL_GRID_SIZE
+SQUARE_SIZE = 5*grbl.Grbl.GRID_SIZE
 MAX_X_SQUARE = 4
 MAX_Y_SQUARE = 3
 
@@ -179,7 +178,7 @@ if not os.path.exists('png'):
 
 plotter = None
 if not args.noplotter:
-    plotter = grbl.Grbl(grid_size = GRBL_GRID_SIZE)
+    plotter = grbl.Grbl()
     plotter.enable_logging()
 
 if args.detectpaper:
@@ -203,8 +202,8 @@ while True:
     human_symbol = None
     game_over = False
     active_square = (0, 0)
-    active_square_origin = (GRBL_GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
-                            GRBL_GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
+    active_square_origin = (grbl.Grbl.GRID_SIZE + pen[0][0] + active_square[0] * SQUARE_SIZE,
+                            grbl.Grbl.GRID_SIZE + pen[0][1] + active_square[1] * SQUARE_SIZE)
     print("Active square: %s" % str(active_square_origin))
     
     if plotter:
