@@ -133,7 +133,7 @@ def detect_grid_position(frame):
     x2 = int(xx[1] + w/3)
     y1 = int(yy[0] - h/3)
     y2 = int(yy[1] + h/3)
-    cv2.imwrite('png/out.png', output)
+    #cv2.imwrite('png/out.png', output)
     cv2.imwrite('png/nolines.png', nolines)
     return ((x1, x2), (y1, y2))
     
