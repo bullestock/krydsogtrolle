@@ -248,7 +248,11 @@ def detect_symbols(pic, xx, yy, board):
                 y1 = int(y*dy)
                 y2 = int((y+1)*dy)
                 x1 = int(x*dx)
-                x2 = int((x+1)*dx) 
+                x2 = int((x+1)*dx)
+                # perhaps?
+                #if y == 1:
+                #    # Left column
+                #    x1 = x1 - MARGIN
                 cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
                 favour_cross = False
                 # TODO: Favour X if appropriate
