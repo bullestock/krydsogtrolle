@@ -276,15 +276,31 @@ class TestDetectMethods(unittest.TestCase):
         self.assertEqual(sym, expected)
 
     def test_circles(self):
-        self.t_detect_symbol(cv2.imread('refimgs/009-circle.png'), 'O')
         #self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
         #self.t_detect_symbol(cv2.imread('refimgs/001-incomplete-circle.png'), 'O')
         #self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
         #self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
         #self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/007-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/009-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/010-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/012-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/013-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/014-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/015-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/018-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/019-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/020-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/021-circle.png'), 'O')
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/011-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/016-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/017-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/019-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/022-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/024-cross.png'), 'X')
         
     def test_empty(self):
         self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
@@ -324,3 +340,19 @@ if __name__ == "__main__":
                 # draw the center of the circle
                 cv2.circle(input,(i[0],i[1]),2,(0,0,255),3)
             cv2.imwrite('png/hough.png', input)
+    if False:
+        input = cv2.imread('refimgs/grid_pic2.png')
+        height, width = input.shape[:2]
+        xx = (0, width)
+        yy = (0, height)
+        dx = (xx[1] - xx[0])/5
+        dy = (yy[1] - yy[0])/5
+        MARGIN=10
+        for y in range(0, 5):
+            for x in range(0, 5):
+                y1 = int(y*dy)
+                y2 = int((y+1)*dy)
+                x1 = int(x*dx)
+                x2 = int((x+1)*dx)
+                cell = input[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
+                cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
