@@ -2,6 +2,7 @@ import cv2
 import numpy
 import math
 import statistics
+import unittest
 from shapely.geometry import LineString, Point
 from minimax import Game
 
@@ -17,7 +18,7 @@ def to_list(t):
 # Quantize an image
 def quantize(img, nof_colors):
     Z = img.reshape((-1, 3))
-    # convert to np.float32
+    # convert to numpy.float32
     Z = numpy.float32(Z)
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
@@ -186,6 +187,9 @@ def detect_grid(input, min_length):
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
 def detect_shape_contours(x, y, cell, favour_cross=False):
+    """
+    Return '.', 'X' or 'O'
+    """
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
     min = int(numpy.amin(cell))
     max = int(numpy.amax(cell))
@@ -263,13 +267,60 @@ def detect_symbols(pic, xx, yy, board):
             row.append(sym)
         symbols.append(row)
     return symbols
-                
-if __name__ == "__main__":
-    input = cv2.imread('out.png')
-    xx = (37, 345)
-    yy = (62, 367)
-    pic = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
-    board = Game()
-    cur_squares = board.get_board()
-    new_squares = detect_symbols(pic, xx, yy, cur_squares)
 
+class TestDetectMethods(unittest.TestCase):
+
+    def t_detect_symbol(self, image, expected):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        sym = detect_shape_contours(0, 0, gray)
+        self.assertEqual(sym, expected)
+
+    def test_circles(self):
+        self.t_detect_symbol(cv2.imread('refimgs/009-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/001-incomplete-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
+
+    def test_crosses(self):
+        self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
+        
+    def test_empty(self):
+        self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
+        #self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
+        
+if __name__ == "__main__":
+    unittest.main()
+    if False:
+        input = cv2.imread('out.png')
+        xx = (37, 345)
+        yy = (62, 367)
+        pic = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
+        board = Game()
+        cur_squares = board.get_board()
+        new_squares = detect_symbols(pic, xx, yy, cur_squares)
+    if False:
+        input = cv2.imread('problems/brokencircle/cell11raw.png')
+        pic = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
+        sym = detect_shape_contours(0, 0, pic)
+        print('detect_shape_contours: {}'.format(sym))
+
+        thresh = cv2.imread('png/cell00thres.png')
+        thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+
+        circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT_ALT, 1.5,
+                                   # minDist - set to a high value to only ever detect one circle
+                                   100,
+                                   param1=300, param2=0.5, minRadius=10, maxRadius=50)
+        if circles.any():
+            radius = circles[0][0][2]
+            print('circle radius: %d' % radius)
+            circles = numpy.uint16(numpy.around(circles))
+
+            for i in circles[0,:]:
+                # draw the outer circle
+                cv2.circle(input,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(input,(i[0],i[1]),2,(0,0,255),3)
+            cv2.imwrite('png/hough.png', input)
