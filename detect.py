@@ -256,6 +256,7 @@ def detect_symbols(pic, xx, yy, board):
                 cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
                 favour_cross = False
                 # TODO: Favour X if appropriate
+                print('Cell %d, %d -> %d, %d' % (x1, y1, x2, y2))
                 sym = detect_shape_contours(x, y, cell, favour_cross)
             else:
                 print('Skip (%d, %d): %c' % (x, y, sym))
