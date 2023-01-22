@@ -152,7 +152,7 @@ class Grbl:
         self.write(b"G0X%dY%d\n" % (-(x+radius), y))
         self.pen_up(False)
         STEPS = 24
-        for i in range(0, STEPS+1):
+        for i in range(0, STEPS+2):
             angle = i*2*math.pi/STEPS
             cx = x + math.cos(angle)*radius
             cy = y + math.sin(angle)*radius
