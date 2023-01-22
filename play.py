@@ -129,9 +129,14 @@ def detect_grid_position(frame):
     print("Grid pos %d, %d   %d, %d" % (xx[0], yy[0], xx[1], yy[1]))
     w = xx[1] - xx[0]
     h = yy[1] - yy[0]
+    print('w %d h %d' % (w, h))
     x1 = int(xx[0] - w/3)
+    if x1 < 0:
+        x1 = 0
     x2 = int(xx[1] + w/3)
     y1 = int(yy[0] - h/3)
+    if y1 < 0:
+        y1 = 0
     y2 = int(yy[1] + h/3)
     #cv2.imwrite('png/out.png', output)
     cv2.imwrite('png/nolines.png', nolines)
@@ -301,7 +306,7 @@ while True:
             for i in range(0, 3):
                 x = randint(0, 2)
                 y = randint(0, 2)
-                speed = randint(2000, 5000)
+                speed = randint(4000, 8000)
                 plotter.goto_grid(x, y, speed=speed)
                 time.sleep(randint(200, 1000)/1000)
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
@@ -322,4 +327,5 @@ while True:
             break
 
         # Make room for human
-        plotter.present()
+        if plotter:
+            plotter.present()
