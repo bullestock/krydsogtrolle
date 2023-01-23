@@ -214,7 +214,7 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
     if (circles is not None) and circles.any():
         radius = circles[0][0][2]
         if radius > 10 and radius < width/2:
-            print('Hough says O')
+            #print('Hough says O')
             return 'O'
         print('circle radius: %d' % radius)
         circles = numpy.uint16(numpy.around(circles))
@@ -310,7 +310,6 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/014-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/015-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/018-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/019-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/020-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/021-circle.png'), 'O')
 
