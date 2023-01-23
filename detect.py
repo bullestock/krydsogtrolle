@@ -206,6 +206,27 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
     if nonzero > 2000:
         print('Fatal error: filled cell detected (thr %d nz %d)' % (thr, nonzero))
         raise Exception('filled cell detected (thr %d nz %d)' % (thr, nonzero))
+
+    circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT_ALT, 1.5,
+                               # minDist - set to a high value to only ever detect one circle
+                               100,
+                               param1=300, param2=0.5, minRadius=10, maxRadius=50)
+    if (circles is not None) and circles.any():
+        radius = circles[0][0][2]
+        if radius > 10 and radius < width/2:
+            print('Hough says O')
+            return 'O'
+        print('circle radius: %d' % radius)
+        circles = numpy.uint16(numpy.around(circles))
+        print(circles)
+        for i in circles[0,:]:
+            print(i)
+            # draw the outer circle
+            cv2.circle(cell,(i[0],i[1]),i[2],(0,255,0),2)
+            # draw the center of the circle
+            cv2.circle(cell,(i[0],i[1]),2,(0,0,255),3)
+            cv2.imwrite('png/hough.png', cell)
+
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -276,14 +297,14 @@ class TestDetectMethods(unittest.TestCase):
         self.assertEqual(sym, expected)
 
     def test_circles(self):
-        #self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/001-incomplete-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/001-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/007-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/009-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/010-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/010-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/012-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/013-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/014-circle.png'), 'O')
@@ -303,8 +324,8 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/024-cross.png'), 'X')
         
     def test_empty(self):
-        self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
         #self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
+        self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
         
 if __name__ == "__main__":
     unittest.main()
