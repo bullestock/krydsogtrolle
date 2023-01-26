@@ -312,6 +312,9 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/018-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/020-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/021-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/023-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
@@ -361,7 +364,7 @@ if __name__ == "__main__":
                 cv2.circle(input,(i[0],i[1]),2,(0,0,255),3)
             cv2.imwrite('png/hough.png', input)
     if False:
-        input = cv2.imread('refimgs/grid_pic2.png')
+        input = cv2.imread('problems/brokencircle/grid_pic.png')
         height, width = input.shape[:2]
         xx = (0, width)
         yy = (0, height)
