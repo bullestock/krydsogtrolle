@@ -191,6 +191,7 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
     Return '.', 'X' or 'O'
     """
     cv2.imwrite("png/cell%d%draw.png" % (x, y), cell)
+
     min = int(numpy.amin(cell))
     max = int(numpy.amax(cell))
     print('cell%d%d: %d - %d' % (x, y, min, max))
@@ -207,25 +208,42 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
         print('Fatal error: filled cell detected (thr %d nz %d)' % (thr, nonzero))
         raise Exception('filled cell detected (thr %d nz %d)' % (thr, nonzero))
 
-    circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT_ALT, 1.5,
-                               # minDist - set to a high value to only ever detect one circle
-                               100,
-                               param1=300, param2=0.5, minRadius=10, maxRadius=50)
+    if False:
+        circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT_ALT, 1.5,
+                                   # minDist - set to a high value to only ever detect one circle
+                                   10,
+                                   param1=300, param2=0.5, minRadius=10, maxRadius=50)
+    else:
+        circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 1,
+                                   # minDist - set to a high value to only ever detect one circle
+                                   1000,
+                                   10, 30, 1, 30, maxRadius=50)
+    #print(circles)
     if (circles is not None) and circles.any():
         radius = circles[0][0][2]
-        if radius > 10 and radius < width/2:
-            #print('Hough says O')
-            return 'O'
-        print('circle radius: %d' % radius)
-        circles = numpy.uint16(numpy.around(circles))
-        print(circles)
-        for i in circles[0,:]:
-            print(i)
+        # 32/41 - false positive
+        # 72/88 - OK
+        if radius > 10: # and radius/width > 0.8:
+            print('Hough says O')
+            print('circle radius: %d width %d' % (radius, width))
+            circles = numpy.uint16(numpy.around(circles))
+            c = circles[0][0]
+            print(c)
+            x = c[0]
+            y = c[1]
             # draw the outer circle
-            cv2.circle(cell,(i[0],i[1]),i[2],(0,255,0),2)
+            cv2.circle(cell, (x, y), int(radius), (0,255,0), 2)
             # draw the center of the circle
-            cv2.circle(cell,(i[0],i[1]),2,(0,0,255),3)
+            cv2.circle(cell, (x, y), 2, (0,0,255), 3)
             cv2.imwrite('png/hough.png', cell)
+            xdiff = abs(width/2 - x)
+            ydiff = abs(height/2 - y)
+            print(width, xdiff, ydiff)
+            if xdiff > 0.4*width or ydiff > 0.4*height:
+                print('Center looks sus')
+            else:
+                #return 'O'
+                return 'O'
 
     MARGIN=5
     thresh = cv2.copyMakeBorder(thresh, MARGIN, MARGIN, MARGIN, MARGIN, cv2.BORDER_CONSTANT, None, 255);
@@ -250,6 +268,15 @@ def detect_shape_contours(x, y, cell, favour_cross=False):
     cross_limit = 0.80 if favour_cross else 0.75
     if nonzero > 100 and solidity < 0.99:
         symbol = 'X' if solidity < cross_limit else 'O'
+    if symbol == 'O':
+        bb = cv2.boundingRect(cnt)
+        #print(bb)
+        bbw = bb[2] - bb[0]
+        bbh = bb[1] - bb[3]
+        bbar = bbw/bbh
+        print('bounding box aspect ratio: %f' % bbar)
+        if bbw/bbh > 4 or bbh/bbw > 4:
+            return '.'
     print("cell%d%d: nz %d thr %d sol %f -> %s" % (x, y, nonzero, thr, solidity, symbol))
     return symbol
 
@@ -316,6 +343,13 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
+    def test_bad(self):
+        #self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
+        #self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
+        #self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
+        #self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/019-cross.png'), 'X')
+
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/011-cross.png'), 'X')
@@ -326,8 +360,8 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/024-cross.png'), 'X')
         
     def test_empty(self):
-        #self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
-        self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
+        self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
+        #self.t_detect_symbol(cv2.imread('refimgs/008-empty.png'), '.')
         
 if __name__ == "__main__":
     unittest.main()
