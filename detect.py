@@ -208,9 +208,11 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
         print('Fatal error: filled cell detected (thr %d nz %d)' % (thr, nonzero))
         raise Exception('filled cell detected (thr %d nz %d)' % (thr, nonzero))
 
-    # Heuristic #1: Detect lines crossing at an angle larger than 70 degrees
+    # Heuristic #1: Detect lines crossing at an angle larger than MIN_ANGLE degrees
     ###############
     crossings_vote = None
+    MIN_EXTEND = width/5
+    MIN_ANGLE = 70
     
     edges = cv2.Canny(cell, 50, 150, apertureSize=3)
     cv2.imwrite('png/uncanny.png', edges)
@@ -225,7 +227,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     if lines is not None:
         segments = []
         for line in lines:
-            print('line: ', line)
+            if SILLYDEBUG:
+                print('line: ', line)
             x1 = line[0][0]
             y1 = line[0][1]
             x2 = line[0][2]
@@ -237,47 +240,61 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
         line_image = numpy.copy(thresh) * 0  # creating a blank to draw lines on
         line_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
         for i in range(0, len(segments)):
-            print(i)
             for j in range(0, len(segments)):
-                if i != j and segments[i].intersection(segments[j]):
-                    dx1 = segments[i].coords[0][0] - segments[i].coords[1][0]
-                    dy1 = segments[i].coords[0][1] - segments[i].coords[1][1]
-                    dx2 = segments[j].coords[0][0] - segments[j].coords[1][0]
-                    dy2 = segments[j].coords[0][1] - segments[j].coords[1][1]
-                    a1 = math.degrees(math.atan2(dy1, dx1))
-                    a2 = math.degrees(math.atan2(dy2, dx2))
-                    adiff = (a1 - a2 + 180) % 360 - 180
-                    if adiff > 70:
-                        print('intersect: %d, %d - %f/%f %d' % (i, j, a1, a2, adiff))
-                        print(segments[i])
-                        cv2.line(line_image, to_list(segments[i].coords[0]), to_list(segments[i].coords[1]), (0, 255, 255), 3)
-                        cv2.line(line_image, to_list(segments[j].coords[0]), to_list(segments[j].coords[1]), (0, 255, 0), 3)
-                        cv2.imwrite('png/hoes.png', line_image)
-                        crossings_vote = 'X'
+                isect = segments[i].intersection(segments[j])
+                if i != j and isect:
+                    # The lines intersect. Check how much they extend beyond the intersection point.
+                    i_coords = segments[i].coords
+                    j_coords = segments[j].coords
+                    dist1 = Point(i_coords[0]).distance(isect)
+                    dist2 = Point(i_coords[1]).distance(isect)
+                    dist3 = Point(j_coords[0]).distance(isect)
+                    dist4 = Point(j_coords[1]).distance(isect)
+                    if (dist1 >= MIN_EXTEND and dist2 >= MIN_EXTEND and
+                        dist3 >= MIN_EXTEND and dist4 >= MIN_EXTEND):
+                        # The lines extend sufficiently. Check that they cross at more or less a right angle.
+                        dx1 = i_coords[0][0] - i_coords[1][0]
+                        dy1 = i_coords[0][1] - i_coords[1][1]
+                        dx2 = j_coords[0][0] - j_coords[1][0]
+                        dy2 = j_coords[0][1] - j_coords[1][1]
+                        a1 = math.degrees(math.atan2(dy1, dx1))
+                        a2 = math.degrees(math.atan2(dy2, dx2))
+                        adiff = (a1 - a2 + 180) % 360 - 180
+                        if adiff > MIN_ANGLE:
+                            if SILLYDEBUG:
+                                print('intersect: %d, %d - %f/%f %d' % (i, j, a1, a2, adiff))
+                            cv2.line(line_image, to_list(i_coords[0]), to_list(i_coords[1]), (0, 255, 255), 3)
+                            cv2.line(line_image, to_list(j_coords[0]), to_list(j_coords[1]), (0, 255, 0), 3)
+                            cv2.imwrite('png/hoes.png', line_image)
+                            crossings_vote = 'X'
 
     # Heuristic #2: Detect circle with center reasonable near the image center with reasonable radius
     ###############
     circle_vote = None
 
     if True:
-        # this does not work for 007
+        # this does not work for 007, 026
         circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT_ALT, 1.5,
-                                   # minDist - set to a high value to only ever detect one circle
-                                   10,
+                                   # minDist - you would expect that a high value would be fine, but
+                                   # any value above 3 makes detection fail
+                                   3,
                                    param1=300, param2=0.5, minRadius=10, maxRadius=50)
     else:
+        # this does not work for 005
         circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 1,
                                    # minDist - set to a high value to only ever detect one circle
                                    1000,
                                    10, 30, 1, 30, maxRadius=int(width/2))
-    #print(circles)
+    if SILLYDEBUG:
+        print('circles', circles)
     if (circles is not None) and circles.any():
         radius = circles[0][0][2]
         # 32/41 - false positive
         # 72/88 - OK
         if radius > 10: # and radius/width > 0.8:
-            print('Hough says O')
-            print('circle radius: %d width %d' % (radius, width))
+            if SILLYDEBUG:
+                print('Hough says O')
+                print('circle radius: %d width %d' % (radius, width))
             circles = numpy.uint16(numpy.around(circles))
             c = circles[0][0]
             print(c)
@@ -292,7 +309,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
             ydiff = abs(height/2 - y)
             print(width, xdiff, ydiff)
             if xdiff > 0.4*width or ydiff > 0.4*height:
-                print('Center looks sus')
+                if SILLYDEBUG:
+                    print('Center looks sus')
             else:
                 circle_vote = 'O'
 
@@ -323,21 +341,23 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     cross_limit = 0.80 if favour_cross else 0.75
     if nonzero > 100 and solidity < 0.99:
         contour_vote = 'X' if solidity < cross_limit else 'O'
-        if symbol == 'O':
+        if contour_vote == 'O':
             bb = cv2.boundingRect(cnt)
             #print(bb)
             bbw = bb[2] - bb[0]
             bbh = bb[1] - bb[3]
             bbar = bbw/bbh
-            print('bounding box aspect ratio: %f' % bbar)
+            if SILLYDEBUG:
+                print('bounding box aspect ratio: %f' % bbar)
             if bbw/bbh > 4 or bbh/bbw > 4:
                 contour_vote = None
-    print("cell%d%d: nz %d thr %d sol %f -> %s" % (grid_x, grid_y, nonzero, thr, solidity, contour_vote))
+    print("cell%d%d: nz %d thr %d sol %f -> %s X %s O %s" % (grid_x, grid_y, nonzero, thr, solidity,
+                                                             contour_vote, crossings_vote, circle_vote))
     if crossings_vote:
         return crossings_vote
     if circle_vote:
         return circle_vote
-    return contour_vote
+    return contour_vote if contour_vote else '.'
 
 def detect_symbols(pic, xx, yy, board):
     """
@@ -385,10 +405,8 @@ class TestDetectMethods(unittest.TestCase):
     def test_circles(self):
         self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/001-incomplete-circle.png'), 'O')
-        # cropped
-        #self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
-        # cropped
-        #self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/002-incomplete-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/004-incomplete-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/007-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/009-circle.png'), 'O')
@@ -404,12 +422,7 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
-    def test_bad(self):
-        #self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
-        #self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
-        self.t_detect_symbol(cv2.imread('refimgs/005-incomplete-circle.png'), 'O')
-        #self.t_detect_symbol(cv2.imread('refimgs/019-cross.png'), 'X')
+    #def test_bad(self):
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
@@ -419,6 +432,7 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/019-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/022-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/024-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/025-cross.png'), 'X')
         
     def test_empty(self):
         self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
