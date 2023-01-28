@@ -303,10 +303,12 @@ while True:
         (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move(allow_early_cheat=True)
         if plotter and cheating:
             # Fake some moves
+            lower_limit = 6000
             for i in range(0, 3):
                 x = randint(0, 2)
                 y = randint(0, 2)
                 speed = randint(4000, 8000)
+                lower_limit = 4000
                 plotter.goto_grid(x, y, speed=speed)
                 time.sleep(randint(200, 1000)/1000)
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
