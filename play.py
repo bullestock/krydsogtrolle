@@ -296,6 +296,7 @@ while True:
                 plotter.show_winner(go[1], go[2])
                 plotter.present()
             wait_for_paper()
+            display.clear()
             break
 
         my_symbol = board.get_enemy(human_symbol)
