@@ -190,7 +190,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     """
     Return '.', 'X' or 'O'
     """
-    cv2.imwrite("png/cell%d%draw.png" % (grid_x, grid_y), cell)
+    if SILLYDEBUG:
+        cv2.imwrite("png/cell%d%draw.png" % (grid_x, grid_y), cell)
 
     min = int(numpy.amin(cell))
     max = int(numpy.amax(cell))
@@ -200,7 +201,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
         return '.'
     thr = int((min + max)/2) # + 0.2*(max - min))
     ret, thresh = cv2.threshold(cell, thr, 255, cv2.THRESH_BINARY)
-    cv2.imwrite("png/cell%d%dthres.png" % (grid_x, grid_y), thresh)
+    if SILLYDEBUG:
+        cv2.imwrite("png/cell%d%dthres.png" % (grid_x, grid_y), thresh)
     # Calculate nonzero pixels to eliminate noise
     height, width = thresh.shape[:2]
     nonzero = height*width - cv2.countNonZero(thresh)
@@ -215,7 +217,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     MIN_ANGLE = 70
     
     edges = cv2.Canny(cell, 50, 150, apertureSize=3)
-    cv2.imwrite('png/uncanny.png', edges)
+    if SILLYDEBUG:
+        cv2.imwrite('png/uncanny.png', edges)
     
     rho = 10  # distance resolution in pixels of the Hough grid
     theta = numpy.pi / 180  # angular resolution in radians of the Hough grid
@@ -265,7 +268,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                                 print('intersect: %d, %d - %f/%f %d' % (i, j, a1, a2, adiff))
                             cv2.line(line_image, to_list(i_coords[0]), to_list(i_coords[1]), (0, 255, 255), 3)
                             cv2.line(line_image, to_list(j_coords[0]), to_list(j_coords[1]), (0, 255, 0), 3)
-                            cv2.imwrite('png/hoes.png', line_image)
+                            if SILLYDEBUG:
+                                cv2.imwrite('png/hough-crossing.png', line_image)
                             crossings_vote = 'X'
 
     # Heuristic #2: Detect circle with center reasonable near the image center with reasonable radius
@@ -304,10 +308,10 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
             cv2.circle(cell, (x, y), int(radius), (0,255,0), 2)
             # draw the center of the circle
             cv2.circle(cell, (x, y), 2, (0,0,255), 3)
-            cv2.imwrite('png/hough.png', cell)
+            if SILLYDEBUG:
+                cv2.imwrite('png/hough-circles.png', cell)
             xdiff = abs(width/2 - x)
             ydiff = abs(height/2 - y)
-            print(width, xdiff, ydiff)
             if xdiff > 0.4*width or ydiff > 0.4*height:
                 if SILLYDEBUG:
                     print('Center looks sus')
@@ -332,7 +336,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     cnt = contours[largest_idx]
     cell = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
     cv2.drawContours(cell, [cnt], -1, (255,0,0), 1)
-    cv2.imwrite("png/cell%d%d.png" % (grid_x, grid_y), cell)
+    if SILLYDEBUG:
+        cv2.imwrite("png/cell%d%d-contour.png" % (grid_x, grid_y), cell)
     area = cv2.contourArea(cnt)
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
