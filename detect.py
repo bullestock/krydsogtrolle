@@ -274,7 +274,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
 
     # Heuristic #2: Detect circle with center reasonable near the image center with reasonable radius
     ###############
-    circle_vote = None
+    circle_vote = 0
 
     if True:
         # this does not work for 007, 026
@@ -316,7 +316,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                 if SILLYDEBUG:
                     print('Center looks sus')
             else:
-                circle_vote = 'O'
+                circle_vote = 1 if radius < 18 else 2
 
     # Heuristic #3: Find contours and compute solidity
     ###############
@@ -329,6 +329,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     largest_idx = 0
     idx = 0
     for c in contours:
+        #print('len ', len(c))
         if len(c) > n:
             n = len(c)
             largest_idx = idx
@@ -341,6 +342,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     area = cv2.contourArea(cnt)
     hull = cv2.convexHull(cnt)
     hull_area = cv2.contourArea(hull)
+    #print('hull %s area %f hull %f' % (hull, area, hull_area))
     solidity = float(area)/hull_area
     symbol = '.'
     cross_limit = 0.80 if favour_cross else 0.75
@@ -360,9 +362,11 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                                                              contour_vote, crossings_vote, circle_vote))
     if crossings_vote:
         return crossings_vote
-    if circle_vote:
-        return circle_vote
-    return contour_vote if contour_vote else '.'
+    if circle_vote > 1:
+        return 'O'
+    if contour_vote:
+        return contour_vote
+    return 'O' if circle_vote else '.'
 
 def detect_symbols(pic, xx, yy, board):
     """
@@ -427,7 +431,8 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/026-circle.png'), 'O')
         self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
-    #def test_bad(self):
+    def test_bad(self):
+        self.t_detect_symbol(cv2.imread('refimgs/010-circle.png'), 'O')
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
@@ -438,6 +443,8 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/022-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/024-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/025-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/028-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/029-cross.png'), 'X')
         
     def test_empty(self):
         self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
@@ -478,7 +485,7 @@ if __name__ == "__main__":
                 cv2.circle(input,(i[0],i[1]),2,(0,0,255),3)
             cv2.imwrite('png/hough.png', input)
     if False:
-        input = cv2.imread('problems/brokencircle/grid_pic.png')
+        input = cv2.imread('problems/grid_pic.png')
         height, width = input.shape[:2]
         xx = (0, width)
         yy = (0, height)
