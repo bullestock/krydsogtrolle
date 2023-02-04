@@ -17,21 +17,26 @@ pin2last = False
 pin3last = False
 
 kbd = Keyboard(usb_hid.devices)
-n = 0
 while True:
-    time.sleep(0.5)
-    n = n + 1
-    if n > 5:
+    time.sleep(0.01)
+    if pin1.value:
+        if not pin1last:
+            kbd.press(Keycode.A)
+            kbd.release_all()
+            pin1last = True
+    else:
         pin1last = False
+    if pin2.value:
+        if not pin2last:
+            kbd.press(Keycode.B)
+            kbd.release_all()
+            pin2last = True
+    else:
         pin2last = False
+    if pin3.value:
+        if not pin3last:
+            kbd.press(Keycode.C)
+            kbd.release_all()
+            pin3last = True
+    else:
         pin3last = False
-    if pin1.value and not pin1last:
-        kbd.send(Keycode.F10)
-        pin1last = True
-    if pin2.value and not pin2last:
-        kbd.send(Keycode.F11)
-        pin2last = True
-    if pin3.value and not pin3last:
-        kbd.send(Keycode.F12)
-        pin3last = True
-
