@@ -1,9 +1,5 @@
 import digitalio, board
-import usb_hid
 import time
-
-from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode
 
 pin1 = digitalio.DigitalInOut(board.IO33)
 pin1.pull = digitalio.Pull.DOWN
@@ -16,27 +12,25 @@ pin1last = False
 pin2last = False
 pin3last = False
 
-kbd = Keyboard(usb_hid.devices)
+time.sleep(3)
+
 while True:
     time.sleep(0.01)
     if pin1.value:
         if not pin1last:
-            kbd.press(Keycode.A)
-            kbd.release_all()
+            print('A')
             pin1last = True
     else:
         pin1last = False
     if pin2.value:
         if not pin2last:
-            kbd.press(Keycode.B)
-            kbd.release_all()
+            print('B')
             pin2last = True
     else:
         pin2last = False
     if pin3.value:
         if not pin3last:
-            kbd.press(Keycode.C)
-            kbd.release_all()
+            print('C')
             pin3last = True
     else:
         pin3last = False
