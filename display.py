@@ -32,7 +32,7 @@ class Display:
         # Clear display.
         self.disp.clear()
         self.disp.display()
-        self.draw.rectangle((0, 0, self.width, (1)*self.lineheight), outline=0, fill=0)
+        self.draw.rectangle((0, 0, self.width, 2*self.lineheight), outline=0, fill=0)
         
     def show(self, line, text):
         self.draw.rectangle((0, line*self.lineheight, self.width, (line + 1)*self.lineheight), outline=0, fill=0)
