@@ -210,6 +210,12 @@ assert (aspect_ratio > 0.9) and (aspect_ratio < 1.1), 'wrong paper aspect ratio 
 pen = compute_pen_boundaries()
 
 while True:
+    plotter.present()
+    display.clear()
+    display.show(0, 'Insert paper and')
+    display.show(1, 'press white button')
+    wait_for_paper()
+    display.clear()
     # start new game
     board = Game()
     human_symbol = None
@@ -303,7 +309,6 @@ while True:
             if plotter and go[0] != '.':
                 plotter.show_winner(go[1], go[2])
                 plotter.present()
-            wait_for_paper()
             display.clear()
             break
 
@@ -334,7 +339,6 @@ while True:
             if plotter and go[0] != '.':
                 plotter.show_winner(go[1], go[2])
                 plotter.present()
-            wait_for_paper()
             break
 
         # Make room for human
