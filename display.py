@@ -1,5 +1,6 @@
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306
+import time
 
 from PIL import Image
 from PIL import ImageDraw
@@ -14,7 +15,7 @@ class Display:
         self.disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
         # Initialize library.
         self.disp.begin()
-        self.clear()
+        self.disp.clear()
         # Load default font.
         self.font = ImageFont.load_default()
         self.width = self.disp.width
@@ -25,11 +26,13 @@ class Display:
         self.top = self.padding
         # Get drawing object to draw on image.
         self.draw = ImageDraw.Draw(self.image)
+        self.disp.display()
 
     def clear(self):
         # Clear display.
         self.disp.clear()
         self.disp.display()
+        self.draw.rectangle((0, 0, self.width, (1)*self.lineheight), outline=0, fill=0)
         
     def show(self, line, text):
         self.draw.rectangle((0, line*self.lineheight, self.width, (line + 1)*self.lineheight), outline=0, fill=0)
@@ -39,5 +42,10 @@ class Display:
 
 if __name__ == "__main__":
     d = Display()
+    d.clear()
     d.show(0, 'hello')
     d.show(1, 'wazzup')
+    time.sleep(1)
+    d.clear()
+    d.show(1, 'my dude')
+ 
