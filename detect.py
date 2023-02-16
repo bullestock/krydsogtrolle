@@ -396,7 +396,7 @@ def detect_symbols(pic, xx, yy, board):
                 cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
                 favour_cross = False
                 # TODO: Favour X if appropriate
-                print('Cell %d, %d -> %d, %d' % (x1, y1, x2, y2))
+                print('Cell %d, %d -> %d, %d' % (x1+MARGIN, y1+MARGIN, x2-MARGIN, y2-MARGIN))
                 sym = detect_shape_contours(x, y, cell, favour_cross)
             else:
                 print('Skip (%d, %d): %c' % (x, y, sym))
@@ -432,7 +432,7 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
     def test_bad(self):
-        self.t_detect_symbol(cv2.imread('refimgs/010-circle.png'), 'O')
+        self.t_detect_symbol(cv2.imread('refimgs/030-cross.png'), 'X')
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
