@@ -229,9 +229,12 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                             min_line_length, max_line_gap)
     if lines is not None:
         segments = []
+        line_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
         for line in lines:
             if SILLYDEBUG:
-                print('line: ', line)
+                print('line:', line)
+                cv2.line(line_image, (line[0][0], line[0][1]),
+                         (line[0][2], line[0][3]), (0, 255, 0), 1)
             x1 = line[0][0]
             y1 = line[0][1]
             x2 = line[0][2]
@@ -240,12 +243,14 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
             p2 = Point(x2, y2)
             ls = LineString([p1, p2])
             segments.append(ls)
-        line_image = numpy.copy(thresh) * 0  # creating a blank to draw lines on
-        line_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+        if SILLYDEBUG:
+            cv2.imwrite('png/hough-crossing.png', line_image)
         for i in range(0, len(segments)):
             for j in range(0, len(segments)):
                 isect = segments[i].intersection(segments[j])
                 if i != j and isect:
+                    if SILLYDEBUG:
+                        print('intersection: %d %d' % (i, j))
                     # The lines intersect. Check how much they extend beyond the intersection point.
                     i_coords = segments[i].coords
                     j_coords = segments[j].coords
@@ -266,9 +271,9 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                         if adiff > MIN_ANGLE:
                             if SILLYDEBUG:
                                 print('intersect: %d, %d - %f/%f %d' % (i, j, a1, a2, adiff))
-                            cv2.line(line_image, to_list(i_coords[0]), to_list(i_coords[1]), (0, 255, 255), 3)
-                            cv2.line(line_image, to_list(j_coords[0]), to_list(j_coords[1]), (0, 255, 0), 3)
                             if SILLYDEBUG:
+                                cv2.line(line_image, to_list(i_coords[0]), to_list(i_coords[1]), (0, 255, 255), 3)
+                                cv2.line(line_image, to_list(j_coords[0]), to_list(j_coords[1]), (0, 255, 0), 3)
                                 cv2.imwrite('png/hough-crossing.png', line_image)
                             crossings_vote = 'X'
 
@@ -296,9 +301,6 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
         # 32/41 - false positive
         # 72/88 - OK
         if radius > 10: # and radius/width > 0.8:
-            if SILLYDEBUG:
-                print('Hough says O')
-                print('circle radius: %d width %d' % (radius, width))
             circles = numpy.uint16(numpy.around(circles))
             c = circles[0][0]
             print(c)
@@ -312,7 +314,10 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
                 cv2.imwrite('png/hough-circles.png', cell)
             xdiff = abs(width/2 - x)
             ydiff = abs(height/2 - y)
-            if xdiff > 0.4*width or ydiff > 0.4*height:
+            if SILLYDEBUG:
+                print('Hough says O')
+                print('circle radius: %d width %d xd %f yd %f' % (radius, width, xdiff, ydiff))
+            if xdiff > 0.22*width or ydiff > 0.22*height:
                 if SILLYDEBUG:
                     print('Center looks sus')
             else:
@@ -432,7 +437,7 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/027-circle.png'), 'O')
 
     def test_bad(self):
-        self.t_detect_symbol(cv2.imread('refimgs/030-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/031-cross.png'), 'X')
 
     def test_crosses(self):
         self.t_detect_symbol(cv2.imread('refimgs/006-cross.png'), 'X')
@@ -445,6 +450,8 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/025-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/028-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/029-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/030-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/031-cross.png'), 'X')
         
     def test_empty(self):
         self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
