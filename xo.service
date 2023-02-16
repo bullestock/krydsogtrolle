@@ -1,0 +1,14 @@
+[Unit]
+Description=Kryds & Trolle Service
+
+[Service]
+WorkingDirectory=/home/pi/krydsogtrolle
+ExecStart=/bin/bash -c "cd /home/pi/krydsogtrolle; ./xo.sh"
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=xo
+User=pi
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
