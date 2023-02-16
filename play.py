@@ -9,9 +9,9 @@ import subprocess
 import time
 from shapely.geometry import LineString, Point
 # Local modules
+from buttonbox import ButtonBox
 import detect
 import display
-from getkey import getkey, keys
 from minimax import Game
 from random import randint
 
@@ -21,6 +21,8 @@ cam.set(cv2.CAP_PROP_BUFFERSIZE, 1) # don't store old frames
 
 display = display.Display()
 display.show(0, 'Starting')
+
+bb = ButtonBox()
 
 CAM_GRID_SIZE = 60
 SQUARE_SIZE = 5*grbl.Grbl.GRID_SIZE
@@ -154,16 +156,22 @@ def fatal_error(msg):
 
 def wait_for_human_move():
     print('Please make your move')
-    key = wait_key()
-    print('%s was pressed' % key)
+    while True:
+        key = wait_key()
+        print('%s was pressed' % key)
+        if key == 'A':
+            return
 
 def wait_for_paper():
     print('Please replace paper')
-    key = wait_key()
-    print('%s was pressed' % key)
+    while True:
+        key = wait_key()
+        print('%s was pressed' % key)
+        if key == 'C':
+            return
 
 def wait_key():
-    key = getkey()
+    key = bb.wait_key()
     return key
 
 # --- main ---
