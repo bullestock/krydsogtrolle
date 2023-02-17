@@ -152,6 +152,8 @@ def index_to_y(index):
 
 def fatal_error(msg):
     print('FATAL: %s' % msg)
+    display.show(1, 'FATAL: %s' % msg)
+    time.sleep(10)
     quit()
 
 def wait_for_human_move():
@@ -254,7 +256,7 @@ while True:
                 print("detect_grid_position: %s, %s" % (xx, yy))
             progress('Detecting symbols')
             pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
-            new_squares = detect.detect_symbols(pic, xx, yy, cur_squares)
+            new_squares = detect.detect_symbols(pic, xx, yy, cur_squares, human_symbol)
             if not new_squares:
                 if not first:
                     fatal_error('no symbols found')

@@ -375,7 +375,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour=None):
         return contour_vote
     return 'O' if circle_vote else '.'
 
-def detect_symbols(pic, xx, yy, board):
+def detect_symbols(pic, xx, yy, board, favour=None):
     """
     Return 5 x 5 array with X, O or None
     """
@@ -401,10 +401,8 @@ def detect_symbols(pic, xx, yy, board):
                 #    # Left column
                 #    x1 = x1 - MARGIN
                 cell = grid_pic[y1+MARGIN:y2-MARGIN, x1+MARGIN:x2-MARGIN]
-                favour_cross = False
-                # TODO: Favour X if appropriate
                 print('Cell %d, %d -> %d, %d' % (x1+MARGIN, y1+MARGIN, x2-MARGIN, y2-MARGIN))
-                sym = detect_shape_contours(x, y, cell, favour_cross)
+                sym = detect_shape_contours(x, y, cell, favour)
             else:
                 print('Skip (%d, %d): %c' % (x, y, sym))
             row.append(sym)
