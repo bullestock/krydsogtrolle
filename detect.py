@@ -186,7 +186,7 @@ def detect_grid(input, min_length):
 
     return (horizontal_c, vertical_c, xx, yy, lines_edges, nolines)
 
-def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
+def detect_shape_contours(grid_x, grid_y, cell, favour=None):
     """
     Return '.', 'X' or 'O'
     """
@@ -300,7 +300,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
         radius = circles[0][0][2]
         # 32/41 - false positive
         # 72/88 - OK
-        if radius > 10: # and radius/width > 0.8:
+        min_radius = 20 if favour == 'X' else 10
+        if radius >= min_radius:
             circles = numpy.uint16(numpy.around(circles))
             c = circles[0][0]
             print(c)
@@ -317,7 +318,8 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
             if SILLYDEBUG:
                 print('Hough says O')
                 print('circle radius: %d width %d xd %f yd %f' % (radius, width, xdiff, ydiff))
-            if xdiff > 0.22*width or ydiff > 0.22*height:
+            max_offset = 0.1 if favour == 'X' else 0.22
+            if xdiff > max_offset*width or ydiff > max_offset*height:
                 if SILLYDEBUG:
                     print('Center looks sus')
             else:
@@ -350,7 +352,7 @@ def detect_shape_contours(grid_x, grid_y, cell, favour_cross=False):
     #print('hull %s area %f hull %f' % (hull, area, hull_area))
     solidity = float(area)/hull_area
     symbol = '.'
-    cross_limit = 0.80 if favour_cross else 0.75
+    cross_limit = 0.80 if favour == 'X' else 0.75
     if nonzero > 100 and solidity < 0.99:
         contour_vote = 'X' if solidity < cross_limit else 'O'
         if contour_vote == 'O':
@@ -415,6 +417,9 @@ class TestDetectMethods(unittest.TestCase):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         sym = detect_shape_contours(0, 0, gray)
         self.assertEqual(sym, expected)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        sym = detect_shape_contours(0, 0, gray, expected)
+        self.assertEqual(sym, expected)
 
     def test_circles(self):
         self.t_detect_symbol(cv2.imread('refimgs/000-incomplete-circle.png'), 'O')
@@ -452,6 +457,7 @@ class TestDetectMethods(unittest.TestCase):
         self.t_detect_symbol(cv2.imread('refimgs/029-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/030-cross.png'), 'X')
         self.t_detect_symbol(cv2.imread('refimgs/031-cross.png'), 'X')
+        self.t_detect_symbol(cv2.imread('refimgs/032-cross.png'), 'X')
         
     def test_empty(self):
         self.t_detect_symbol(cv2.imread('refimgs/003-shadow.png'), '.')
