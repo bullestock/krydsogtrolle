@@ -189,7 +189,7 @@ parser.add_argument('-p', '--detectpaper',
 args = parser.parse_args()
 
 ip = subprocess.Popen("ip a show wlan0|grep 'inet '|awk '{print $2}'| cut -d/ -f1", shell=True, stdout=subprocess.PIPE).communicate()[0]
-display.show(0, "IP: %s" % ip)
+display.show(0, "IP: %s" % ip.decode('utf-8')
 display.show(1, "Press a key")
 wait_key()
 display.clear()
@@ -218,9 +218,13 @@ assert (aspect_ratio > 0.9) and (aspect_ratio < 1.1), 'wrong paper aspect ratio 
 pen = compute_pen_boundaries()
 
 while True:
+    cheat_allowed = True if randint(0, 1) > 0 else False
     plotter.present()
     display.clear()
-    display.show(0, 'Insert paper and')
+    if cheat_allowed:
+        display.show(0, 'Insert paper and')
+    else:
+        display.show(0, 'Insert paper then')
     display.show(1, 'press white button')
     wait_for_paper()
     display.clear()
@@ -301,7 +305,7 @@ while True:
         board.make_human_move(new_symbol_x, new_symbol_y)
         go = board.game_over()
         if go:
-            if go[0] == '.':
+            if cheat_allowed and go[0] == '.':
                 # Draw, we can still win
                 print('Determining cheating move for %c' % my_symbol)
                 (m, computer_move_x, computer_move_y) = board.get_cheating_move()
@@ -322,15 +326,15 @@ while True:
 
         my_symbol = board.get_enemy(human_symbol)
         print('Determining move for %c' % my_symbol)
-        (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move(allow_early_cheat=True)
+        (m, computer_move_x, computer_move_y, cheating) = board.get_computer_move(allow_early_cheat=cheat_allowed)
         if plotter and cheating:
             # Fake some moves
             lower_limit = 6000
             for i in range(0, 3):
                 x = randint(0, 2)
                 y = randint(0, 2)
-                speed = randint(4000, 8000)
-                lower_limit = 4000
+                lower_limit = 6000
+                speed = randint(lower_limit, 8000)
                 plotter.goto_grid(x, y, speed=speed)
                 time.sleep(randint(200, 1000)/1000)
         progress('Playing %c at (%d, %d)' % (my_symbol, computer_move_x, computer_move_y))
