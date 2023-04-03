@@ -188,6 +188,12 @@ parser.add_argument('-p', '--detectpaper',
                     action='store_true')
 args = parser.parse_args()
 
+ip = subprocess.Popen("ip a show wlan0|grep 'inet '|awk '{print $2}'| cut -d/ -f1", shell=True, stdout=subprocess.PIPE).communicate()[0]
+display.show(0, "IP: %s" % ip)
+display.show(1, "Press a key")
+wait_key()
+display.clear()
+
 if not os.path.exists('png'):
     os.makedirs('png')
 
