@@ -189,7 +189,7 @@ parser.add_argument('-p', '--detectpaper',
 args = parser.parse_args()
 
 ip = subprocess.Popen("ip a show wlan0|grep 'inet '|awk '{print $2}'| cut -d/ -f1", shell=True, stdout=subprocess.PIPE).communicate()[0]
-display.show(0, "IP: %s" % ip.decode('utf-8')
+display.show(0, "IP: %s" % ip.decode('utf-8'))
 display.show(1, "Press a key")
 wait_key()
 display.clear()
