@@ -20,7 +20,6 @@ cam = cv2.VideoCapture(port)
 cam.set(cv2.CAP_PROP_BUFFERSIZE, 1) # don't store old frames
 
 display = display.Display()
-display.show(0, 'Starting')
 
 bb = ButtonBox()
 
@@ -152,7 +151,9 @@ def index_to_y(index):
 
 def fatal_error(msg):
     print('FATAL: %s' % msg)
-    display.show(1, 'FATAL: %s' % msg)
+    MAX = 14
+    display.show(1, 'FATAL: %s' % msg[0:MAX])
+    display.show(2, msg[MAX:])
     time.sleep(10)
     quit()
 
@@ -193,6 +194,7 @@ display.show(0, "IP: %s" % ip.decode('utf-8'))
 display.show(1, "Press a key")
 wait_key()
 display.clear()
+display.show(0, 'Starting')
 
 if not os.path.exists('png'):
     os.makedirs('png')
