@@ -360,10 +360,10 @@ def detect_shape_contours(grid_x, grid_y, cell, favour=None):
             #print(bb)
             bbw = bb[2] - bb[0]
             bbh = bb[1] - bb[3]
-            bbar = bbw/bbh
+            bbar = bbw/bbh if bbh > 0 else bbh/bbw
             if SILLYDEBUG:
                 print('bounding box aspect ratio: %f' % bbar)
-            if bbw/bbh > 4 or bbh/bbw > 4:
+            if bbar > 4:
                 contour_vote = None
     print("cell%d%d: nz %d thr %d sol %f -> %s X %s O %s" % (grid_x, grid_y, nonzero, thr, solidity,
                                                              contour_vote, crossings_vote, circle_vote))
